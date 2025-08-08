@@ -1,0 +1,204 @@
+﻿@model EquipLink.ViewModels.CustomerVMs.CustomerProfileViewModel
+
+@if (Model.Orders != null && Model.Orders.Any())
+{
+    @foreach (var order in Model.Orders)
+    {
+        <!-- Order Details Modal -->
+        <div class="modal fade" id="orderDetailsModal@(order.OrdId)" tabindex="-1" aria-labelledby="orderDetailsModalLabel@(order.OrdId)" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="orderDetailsModalLabel@(order.OrdId)">Order Details - ORD-@order.OrdId</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>Order Information</h6>
+                        <p><strong>Date:</strong> @order.OrdCreatedDate?.ToString("yyyy-MM-dd")</p>
+                        <p><strong>Total:</strong> SAR @order.OrdTotalPrice.ToString("F2")</p>
+                        <p><strong>Status:</strong> @order.OrdStatus</p>
+
+                        @if (order.Orderequipments != null && order.Orderequipments.Any())
+                        {
+                            <h6 class="mt-3">Order Items</h6>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Equipment Name</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Subtotal</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in order.Orderequipments)
+                                    {
+                                        <tr>
+                                            <td>@(item.Equ?.EquName ?? "N/A")</td>
+                                            <td>@item.OrdEqQuantity</td>
+                                            <td>SAR @item.OrdEqUnitPrice.ToString("F2")</td>
+                                            <td>SAR @item.OrdEqSubTotal.ToString("F2")</td>
+                                            <td>@item.OrdEqStartDate?.ToString("yyyy-MM-dd")</td>
+                                            <td>@item.OrdEqEndDate?.ToString("yyyy-MM-dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No order items found.</p>
+                        }
+
+                        @if (order.Maintenances != null && order.Maintenances.Any())
+                        {
+                            <h6 class="mt-3">Maintenance Requests</h6>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Request Date</th>
+                                        <th>Description</th>
+                                        <th>Status</th>
+                                        <th>Completed Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var maintenance in order.Maintenances)
+                                    {
+                                        <tr>
+                                            <td>@maintenance.MainRegDate.ToString("yyyy-MM-dd")</td>
+                                            <td>@maintenance.MainDescription</td>
+                                            <td>@maintenance.MainStatus</td>
+                                            <td>@(maintenance.MainCompletedDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No maintenance requests found.</p>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="printInvoice('ORD-@order.OrdId')">Print Invoice</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Modal -->
+        <div class="modal fade" id="reviewModal@(order.OrdId)" tabindex="-1" aria-labelledby="reviewModalLabel@(order.OrdId)" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reviewModalLabel@(order.OrdId)">Make Review for Order - ORD-@order.OrdId</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (order.Orderequipments != null && order.Orderequipments.Any())
+                        {
+                            <h6>Equipment in Order</h6>
+                            <ul class="list-group">
+                                @foreach (var item in order.Orderequipments)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>@(item.Equ?.EquName ?? "N/A")</strong>
+                                            <small class="text-muted">(Qty: @item.OrdEqQuantity)</small>
+                                        </div>
+                                        <a href="@Url.Action("EquipmentShow", "Front", new { id = item.EquId, order_id = order.OrdId })"
+                                           class="btn btn-sm btn-primary" target="_blank">
+                                            Review This
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted">No equipment found in this order.</p>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<script>
+    function printInvoice(orderId) {
+        const orderIdNum = orderId.replace('ORD-', '');
+        const modalElement = document.getElementById(`orderDetailsModal${orderIdNum}`);
+
+        if (!modalElement) {
+            console.error('Modal not found for order:', orderId);
+            return;
+        }
+
+        // Store the current active element to return focus later
+        const activeElement = document.activeElement;
+
+        // Create a temporary div for printing
+        const printDiv = document.createElement('div');
+        printDiv.innerHTML = `
+            <div class="invoice-container">
+                <h2>Invoice - ${orderId}</h2>
+                <div class="invoice-header">
+                    <p><strong>Company Name:</strong> EquipLink</p>
+                    <p><strong>Date:</strong> ${new Date().toLocaleDateString('en-CA')}</p>
+                </div>
+                <div class="invoice-details">
+                    ${modalElement.querySelector('.modal-body').innerHTML}
+                </div>
+            </div>
+        `;
+
+        // Hide everything except the print content
+        document.body.appendChild(printDiv);
+        const originalDisplay = [];
+        Array.from(document.body.children).forEach(child => {
+            if (child !== printDiv) {
+                originalDisplay.push(child.style.display);
+                child.style.display = 'none';
+            }
+        });
+
+        // Add print-specific styles
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .invoice-container { padding: 20px; max-width: 800px; margin: 0 auto; }
+            .invoice-header { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 20px; }
+            .invoice-details { border: 1px solid #ddd; padding: 20px; }
+            @@page { size: auto; margin: 0mm; }
+        `;
+        printDiv.appendChild(style);
+
+        // Print and clean up
+        window.print();
+
+        // Restore the original content
+        Array.from(document.body.children).forEach((child, index) => {
+            if (child !== printDiv) {
+                child.style.display = originalDisplay[index];
+            }
+        });
+        printDiv.remove();
+
+        // Return focus to the button
+        if (activeElement) {
+            activeElement.focus();
+        }
+    }
+
+    // Function to set maintenance order ID when modal is opened
+    function setMaintenanceOrderId(orderId) {
+        document.getElementById('maintenanceOrderId').value = orderId;
+    }
+</script>

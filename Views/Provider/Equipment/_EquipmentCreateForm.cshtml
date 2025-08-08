@@ -1,0 +1,368 @@
+﻿@model EquipLink.ViewModels.EquipmentVMs.EquipmentCreateViewModel
+@{
+    var action = ViewData["Action"] as string;
+    var method = ViewData["Method"] as string;
+    var categories = ViewBag.Categories as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
+
+    string formMethod = "POST";
+}
+
+<form method="@formMethod" action="@action" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="EquName" class="form-label fw-bold">Name</label>
+            <input type="text"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquName"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquName"
+                   name="EquName"
+                   value="@(Model?.EquName ?? "")"
+                   required>
+            @if (ViewContext.ViewData.ModelState["EquName"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquName"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+		
+		<div class="col-md-6">
+    <label for="EquSerialNumber" class="form-label fw-bold">Serial Number</label>
+    <input type="text"
+           class="form-control @(ViewContext.ViewData.ModelState["EquSerialNumber"]?.Errors.Count > 0 ? "is-invalid" : "")"
+           id="EquSerialNumber"
+           name="EquSerialNumber"
+           value="@(Model?.EquSerialNumber ?? "")"
+           required>
+    @if (ViewContext.ViewData.ModelState["EquSerialNumber"]?.Errors.Count > 0)
+    {
+        <div class="invalid-feedback">
+            @ViewContext.ViewData.ModelState["EquSerialNumber"].Errors.First().ErrorMessage
+        </div>
+    }
+</div>
+
+
+
+        <div class="col-md-6">
+            <label for="EquCondition" class="form-label fw-bold">Condition</label>
+            <select class="form-select @(ViewContext.ViewData.ModelState["EquCondition"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                    id="EquCondition"
+                    name="EquCondition"
+                    required>
+                @{
+                    var selectedCondition = Model?.EquCondition ?? "";
+                }
+                <option value="New" selected="@(selectedCondition == "New")">New</option>
+                <option value="Good" selected="@(selectedCondition == "Good")">Good</option>
+                <option value="Fair" selected="@(selectedCondition == "Fair")">Fair</option>
+                <option value="Poor" selected="@(selectedCondition == "Poor")">Poor</option>
+            </select>
+            @if (ViewContext.ViewData.ModelState["EquCondition"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquCondition"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="EquAvailabilityStatus" class="form-label fw-bold">Availability</label>
+            <select class="form-select @(ViewContext.ViewData.ModelState["EquAvailabilityStatus"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                    id="EquAvailabilityStatus"
+                    name="EquAvailabilityStatus"
+                    required>
+                @{
+                    var selectedAvailability = Model?.EquAvailabilityStatus ?? "";
+                }
+                <option value="Available" selected="@(selectedAvailability == "Available")">Available</option>
+                <option value="Unavailable" selected="@(selectedAvailability == "Unavailable")">Unavailable</option>
+            </select>
+            @if (ViewContext.ViewData.ModelState["EquAvailabilityStatus"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquAvailabilityStatus"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="EquQuantity" class="form-label fw-bold">Quantity</label>
+            <input type="number"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquQuantity"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquQuantity"
+                   name="EquQuantity"
+                   value="@(Model?.EquQuantity.ToString() ?? "")"
+                   min="0"
+                   required>
+            @if (ViewContext.ViewData.ModelState["EquQuantity"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquQuantity"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="EquPrice" class="form-label fw-bold">Price</label>
+            <input type="number"
+                   step="0.01"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquPrice"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquPrice"
+                   name="EquPrice"
+                   value="@(Model?.EquPrice.ToString() ?? "")"
+                   min="0"
+                   required>
+            @if (ViewContext.ViewData.ModelState["EquPrice"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquPrice"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="EquType" class="form-label fw-bold">Type</label>
+            <select class="form-select @(ViewContext.ViewData.ModelState["EquType"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                    id="EquType"
+                    name="EquType"
+                    required>
+                @{
+                    var selectedType = Model?.EquType ?? "rent";
+                }
+                <option value="rent" selected="@(selectedType == "rent")">Rent</option>
+                <option value="buy" selected="@(selectedType == "buy")">Buy</option>
+            </select>
+            @if (ViewContext.ViewData.ModelState["EquType"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquType"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="CategId" class="form-label fw-bold">Category</label>
+            <select class="form-select @(ViewContext.ViewData.ModelState["CategId"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                    id="CategId"
+                    name="CategId"
+                    required>
+                <option value="">Select a category</option>
+                @if (categories != null)
+                {
+                    var selectedCategory = Model?.CategId.ToString() ?? "";
+
+                    foreach (var category in categories)
+                    {
+                        <option value="@category.Value" selected="@(selectedCategory == category.Value)">
+                            @category.Text
+                        </option>
+                    }
+                }
+            </select>
+            @if (ViewContext.ViewData.ModelState["CategId"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["CategId"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+         @* Add *@
+
+        <div class="col-md-6">
+            <label for="EquModel" class="form-label fw-bold">Model</label>
+            <input type="text"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquModel"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquModel"
+                   name="EquModel"
+                   value="@(Model?.EquModel ?? "")">
+            @if (ViewContext.ViewData.ModelState["EquModel"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquModel"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="EquModelYear" class="form-label fw-bold">Model Year</label>
+            <input type="number"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquModelYear"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquModelYear"
+                   name="EquModelYear"
+                   value="@(Model?.EquModelYear?.ToString() ?? "")"
+                   min="1900"
+                   max="@DateTime.Now.Year">
+            @if (ViewContext.ViewData.ModelState["EquModelYear"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquModelYear"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="EquBrand" class="form-label fw-bold">Brand</label>
+            <input type="text"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquBrand"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquBrand"
+                   name="EquBrand"
+                   value="@(Model?.EquBrand ?? "")">
+            @if (ViewContext.ViewData.ModelState["EquBrand"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquBrand"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-md-6">
+            <label for="EquWorkingHours" class="form-label fw-bold">Working Hours</label>
+            <input type="number"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquWorkingHours"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquWorkingHours"
+                   name="EquWorkingHours"
+                   value="@(Model?.EquWorkingHours?.ToString() ?? "")"
+                   min="0">
+            @if (ViewContext.ViewData.ModelState["EquWorkingHours"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquWorkingHours"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+
+        <div class="col-md-12">
+            <label for="EquImage" class="form-label fw-bold">
+                Image <span class="text-danger">*</span>
+            </label>
+            <input type="file"
+                   class="form-control @(ViewContext.ViewData.ModelState["EquImage"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                   id="EquImage"
+                   name="EquImage"
+                   accept="image/*"
+                   onchange="previewImage(this)"
+                   required>
+
+            <div class="form-text">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Supported formats: JPEG, PNG, GIF. Maximum size: 5MB
+                </small>
+            </div>
+
+            <!-- Image Preview -->
+            <div class="mt-3">
+                <div id="imagePreviewContainer" style="display: none;">
+                    <label class="form-label fw-bold">Preview:</label>
+                    <div class="position-relative d-inline-block">
+                        <img id="imagePreview"
+                             src="#"
+                             alt="Image Preview"
+                             class="img-thumbnail rounded-3 shadow-sm"
+                             style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                        <button type="button"
+                                class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                                onclick="clearImagePreview()"
+                                title="Remove image">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @if (ViewContext.ViewData.ModelState["EquImage"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquImage"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-12">
+            <label for="EquFeatures" class="form-label fw-bold">Features</label>
+            <textarea class="form-control @(ViewContext.ViewData.ModelState["EquFeatures"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                      id="EquFeatures"
+                      name="EquFeatures"
+                      rows="3">@(Model?.EquFeatures ?? "")</textarea>
+            @if (ViewContext.ViewData.ModelState["EquFeatures"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquFeatures"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-12">
+            <label for="EquDescription" class="form-label fw-bold">Description</label>
+            <textarea class="form-control @(ViewContext.ViewData.ModelState["EquDescription"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                      id="EquDescription"
+                      name="EquDescription"
+                      rows="3">@(Model?.EquDescription ?? "")</textarea>
+            @if (ViewContext.ViewData.ModelState["EquDescription"]?.Errors.Count > 0)
+            {
+                <div class="invalid-feedback">
+                    @ViewContext.ViewData.ModelState["EquDescription"].Errors.First().ErrorMessage
+                </div>
+            }
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary action-btn">
+                Save Equipment
+            </button>
+            <a href="@Url.Action("Index", "Equipment")" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </div>
+    </div>
+</form></content>
+</invoke>
+
+@section scripts {
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Validate file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size cannot exceed 5MB');
+                    input.value = '';
+                    previewContainer.style.display = 'none';
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Only JPEG, PNG, JPG, and GIF files are allowed');
+                    input.value = '';
+                    previewContainer.style.display = 'none';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        }
+
+        function clearImagePreview() {
+            const input = document.getElementById('EquImage');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+
+            input.value = '';
+            previewContainer.style.display = 'none';
+        }
+    </script>
+}

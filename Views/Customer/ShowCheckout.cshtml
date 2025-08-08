@@ -1,0 +1,617 @@
+﻿@model EquipLink.ViewModels.CartVMs.CheckoutViewModel
+
+@{
+    ViewData["Title"] = "Complete Your Order";
+}
+
+<section class="py-5 bg-light">
+    <div class="container checkout-container">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold display-5 text-primary mb-3">Complete Your Order</h1>
+            <div class="progress" style="height: 8px;">
+                <div style="background-color: rgb(250 233 150)" class="progress-bar bg-primary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+        <div class="container">
+            @using (Html.BeginForm("Checkout", "Cart", FormMethod.Post, new { id = "checkoutForm" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="row g-4">
+                    <!-- Order Summary -->
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h3 class="fw-bold mb-0 d-flex align-items-center">
+                                    <i class="bi bi-cart-check me-2 text-primary"></i> Order Summary
+                                </h3>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="order-items">
+                                    @if (Model.CartItems.Any())
+                                    {
+                                        @for (int index = 0; index < Model.CartItems.Count; index++)
+                                        {
+                                            var item = Model.CartItems[index];
+                                            <div class="order-item border-bottom pb-3 mb-3">
+                                                <div class="d-flex">
+                                                    <div class="me-3" style="width: 80px; height: 80px; overflow: hidden;">
+                                                        <img src="@(item.Equipment.EquImage ?? "https://via.placeholder.com/100")"
+                                                             alt="@item.Equipment.EquName"
+                                                             class="img-fluid rounded-3 h-100 w-100 object-fit-cover">
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="fw-bold mb-1">@item.Equipment.EquName</h6>
+                                                        <div class="d-flex justify-content-between">
+                                                            <span class="badge bg-@(item.Type == "Rent" ? "info" : "success") me-2">
+                                                                @item.Type
+                                                            </span>
+                                                            <strong class="text-success subtotal"
+                                                                    data-index="@index"
+                                                                    data-price="@item.Subtotal"
+                                                                    data-type="@item.Type"
+                                                                    data-quantity="@item.Quantity"
+                                                                    data-start-date="@item.StartDate.ToString("yyyy-MM-dd")"
+                                                                    data-end-date="@item.EndDate.ToString("yyyy-MM-dd")">
+                                                                SAR @item.Subtotal.ToString("F2")
+                                                            </strong>
+                                                        </div>
+                                                        <div class="text-muted small mt-1">
+                                                            @if (item.Type == "Rent")
+                                                            {
+                                                                <div>From: @item.StartDate.ToString("yyyy-MM-dd")</div>
+                                                                <div>To: @item.EndDate.ToString("yyyy-MM-dd")</div>
+
+                                                                @if (item.Equipment.Requests.Any())
+                                                                {
+                                                                    var latestRequest = item.Equipment.Requests.OrderByDescending(r => r.ReqDate).FirstOrDefault();
+                                                                    if (latestRequest?.ReqInsurancePerDay > 0)
+                                                                    {
+                                                                        var days = Math.Max(1, (item.EndDate - item.StartDate).Days);
+                                                                        var insuranceTotal = latestRequest.ReqInsurancePerDay * days;
+
+                                                                        <div class="alert alert-warning mt-2 p-2 small">
+                                                                            <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                                                                            A refundable insurance fee of <strong>SAR @latestRequest.ReqInsurancePerDay?.ToString("F2")</strong>
+                                                                            per day will be held during the rental period (Total: SAR @insuranceTotal?.ToString("F2")).
+                                                                        </div>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center py-4">
+                                            <i class="bi bi-cart-x text-muted display-6"></i>
+                                            <p class="text-muted mt-2">Your cart is empty</p>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- Additional Services -->
+                                <div class="additional-services mt-4">
+                                    <div class="form-check mb-3">
+                                        @Html.CheckBoxFor(m => m.Ord_InstallationOperation, new { @class = "form-check-input", id = "installationCheckbox", onchange = "updateInstallationFee()" })
+                                        <label class="form-check-label d-flex justify-content-between" for="installationCheckbox">
+                                            <span>
+                                                <i class="bi bi-tools me-2"></i> Installation & Operation Service
+                                                <span class="d-block small text-muted">Professional installation and setup by our technicians</span>
+                                            </span>
+                                            <span class="fw-bold">+ SAR 300.00</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Order Totals -->
+                                <div class="order-totals mt-4 pt-3 border-top">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Subtotal</span>
+                                        <span class="fw-bold" id="subtotalAmount">SAR @Model.Total.ToString("F2")</span>
+                                    </div>
+                                    <div style="flex-direction: column;" class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Delivery</span>
+                                        <span class="fw-bold" id="deliveryFee">SAR @Model.TotalDeliveryFee.ToString("F2")</span>
+                                        @if (!string.IsNullOrEmpty(Model.DeliveryMessage))
+                                        {
+                                            <div class="alert alert-info white-space-pre-line">
+                                                @Model.DeliveryMessage
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-3 d-none" id="installationFeeContainer">
+                                        <span class="text-muted">Installation</span>
+                                        <span class="fw-bold" id="installationFee">SAR 300.00</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                        <h5 class="mb-0">Total</h5>
+                                        <h4 class="mb-0 text-primary" id="cartTotal">SAR @((Model.Total + Model.TotalDeliveryFee).ToString("F2"))</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h3 class="fw-bold mb-0 d-flex align-items-center">
+                                    <i class="bi bi-truck me-2 text-primary"></i> Delivery Information
+                                </h3>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="mb-4">
+                                    <label for="billingAddressSelect" class="form-label fw-bold">Select Address</label>
+                                    <select class="form-select address-select" id="billingAddressSelect" name="BillingAddressSelect" onchange="fillAddress('billing', this)">
+                                        <option value="new">Add New Address</option>
+                                        @foreach (var address in Model.Addresses)
+                                        {
+                                            <option value="@address.AddId"
+                                                    data-street="@address.AddStreet"
+                                                    data-city="@address.AddCity"
+                                                    data-state="@address.AddState"
+                                                    data-postal="@address.AddPostalCode"
+                                                    data-country="@address.AddCountry"
+                                                    data-default="@(address.AddIsDefault == 1 ? "true" : "false")">
+                                                @address.AddStreet, @address.AddCity, @address.AddCountry
+                                                @(address.AddIsDefault == 1 ? "(Default)" : "")
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <!-- Address Form -->
+                                <div id="billingAddressFields">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label for="billingStreet" class="form-label">Street Address</label>
+                                            @Html.TextBoxFor(m => m.BillingAddress.Street, new { @class = "form-control", id = "billingStreet", placeholder = "123 Main St", required = "required" })
+                                            @Html.ValidationMessageFor(m => m.BillingAddress.Street, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="billingCity" class="form-label">City</label>
+                                            @Html.TextBoxFor(m => m.BillingAddress.City, new { @class = "form-control", id = "billingCity", placeholder = "Jubail", required = "required" })
+                                            @Html.ValidationMessageFor(m => m.BillingAddress.City, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="billingState" class="form-label">State/Province</label>
+                                            @Html.TextBoxFor(m => m.BillingAddress.State, new { @class = "form-control", id = "billingState", placeholder = "......" })
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="billingPostalCode" class="form-label">Postal Code</label>
+                                            @Html.TextBoxFor(m => m.BillingAddress.PostalCode, new { @class = "form-control", id = "billingPostalCode", placeholder = "12345" })
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="billingCountry" class="form-label">Country</label>
+                                            @Html.TextBoxFor(m => m.BillingAddress.Country, new { @class = "form-control", id = "billingCountry", placeholder = "Saudi Arabia" })
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-check">
+                                                @Html.CheckBoxFor(m => m.BillingAddress.IsDefault, new { @class = "form-check-input", id = "billingIsDefault" })
+                                                <label class="form-check-label" for="billingIsDefault">Set as default address</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Delivery Options -->
+                                <div class="mt-4">
+                                    <div class="mb-3">
+                                        <div class="mb-3">
+                                            <label for="deliveryMethod" class="form-label">Delivery Method</label>
+                                            <select class="form-select" id="deliveryMethod" name="DeliveryMethod" disabled>
+                                                <option value="equiplink" selected>
+                                                    التوصيل عبر شركة التيار السريع - SAR @Model.TotalDeliveryFee.ToString("F2")
+                                                </option>
+                                            </select>
+                                            @Html.HiddenFor(m => m.TotalDeliveryFee)
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="deliveryNotes" class="form-label">Delivery Instructions (Optional)</label>
+                                        @Html.TextAreaFor(m => m.DeliveryNotes, new { @class = "form-control", id = "deliveryNotes", rows = "3", placeholder = "Building access codes, special instructions, etc." })
+                                    </div>
+                                </div>
+
+                                <!-- Payment Method -->
+                                <div class="mt-4">
+                                    <h5 class="fw-bold mb-3 d-flex align-items-center p-4">
+                                        <i class="bi bi-credit-card me-2 text-primary"></i> Payment Method
+                                    </h5>
+
+                                    <div class="payment-methods p-4">
+                                        <div class="payment-option card border-0 mb-3">
+                                            <div class="card-body">
+                                                <div class="form-check">
+                                                    @Html.RadioButtonFor(m => m.PaymentMethod, "Credit Card", new { @class = "form-check-input", id = "creditCard", @checked = "checked" })
+                                                    <label class="form-check-label payment-label w-100" for="creditCard">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="payment-icon bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                                                <i class="bi bi-credit-card-fill text-primary"></i>
+                                                            </div>
+                                                            <div>
+                                                                <h6 class="mb-0">Credit/Debit Card</h6>
+                                                                <small class="text-muted">Visa, Mastercard, American Express</small>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+
+                                                <div class="collapse show mt-3" id="creditCardDetails">
+                                                    <div class="row g-3">
+                                                        <div class="col-12">
+                                                            <label for="cardNumber" class="form-label">Card Number</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                                                                @Html.TextBoxFor(m => m.CardNumber, new { @class = "form-control", id = "cardNumber", placeholder = "1234 5678 9012 3456", maxlength = "19" })
+                                                                @Html.ValidationMessageFor(m => m.CardNumber, "", new { @class = "text-danger" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label for="cardExpiry" class="form-label">Expiry Date</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                                                @Html.TextBoxFor(m => m.CardExpiry, new { @class = "form-control", id = "cardExpiry", placeholder = "MM/YY", maxlength = "5" })
+                                                                @Html.ValidationMessageFor(m => m.CardExpiry, "", new { @class = "text-danger" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label for="cardCVC" class="form-label">Security Code</label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                                                @Html.TextBoxFor(m => m.CardCVC, new { @class = "form-control", id = "cardCVC", placeholder = "CVC", maxlength = "4" })
+                                                                @Html.ValidationMessageFor(m => m.CardCVC, "", new { @class = "text-danger" })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Terms and Conditions -->
+                                <div class="form-check m-3 mt-4">
+                                    @Html.CheckBoxFor(m => m.AcceptTerms, new { @class = "form-check-input", id = "termsCheckbox", required = "required" })
+                                    <label class="form-check-label" for="termsCheckbox">
+                                        I agree to the
+                                        <a href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                                    </label>
+                                    @Html.ValidationMessageFor(m => m.AcceptTerms, "", new { @class = "text-danger" })
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit" class="btn m-3 btn-primary btn-lg w-100 text-center mt-4 py-3">
+                                    <i class="bi bi-lock-fill me-2"></i> Complete Order
+                                </button>
+
+                                <p class="text-center mt-3 text-muted small">
+                                    <i class="bi bi-shield-lock me-1"></i> Your payment is secured with 256-bit SSL encryption
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions of Using Equip Link</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>1. Business Use Only</strong><br>
+                    Equip Link is strictly for registered businesses and licensed industrial or commercial entities.<br>
+                    <span class="text-danger">Personal or individual use is not allowed.</span>
+                </div>
+
+                <div class="mb-3">
+                    <strong>2. Eligible Users</strong><br>
+                    Only official companies or licensed organizations can use the platform. A valid commercial registration or business license is required.
+                </div>
+
+                <div class="mb-3">
+                    <strong>3. Allowed Equipment</strong><br>
+                    Only industrial equipment is permitted, including light, medium, and heavy-duty machinery for commercial or production purposes.<br>
+                    <span class="text-danger">Household or personal-use equipment is not allowed.</span>
+                </div>
+
+                <div class="mb-3">
+                    <strong>4. Purpose of Use</strong><br>
+                    The platform must be used strictly for legal business purposes.<br>
+                    <span class="text-danger">Personal or non-business use is strictly prohibited.</span>
+                </div>
+
+                <div class="mb-3">
+                    <strong>5. Prohibited Actions</strong><br>
+                    Users are not allowed to:
+                    <ul>
+                        <li>Submit false or misleading information about equipment</li>
+                        <li>Bypass the review or approval process in any way</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <strong>6. Admin Review</strong><br>
+                    All accounts and equipment listings are subject to admin review. The admin may approve or reject any submission and will provide a reason if rejected.
+                </div>
+
+                <div class="mb-3">
+                    <strong>7. Violations and Penalties</strong><br>
+                    Violating these terms may lead to:
+                    <ul>
+                        <li>Rejected equipment listings</li>
+                        <li>Account suspension</li>
+                        <li>Legal action in serious cases or fraud</li>
+                    </ul>
+                </div>
+
+         
+
+                <div class="mt-4 text-muted small">
+                    By using Equip Link, you agree to abide by these terms and maintain a professional and trustworthy environment for all users.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize address selection
+        function fillAddress(type, select) {
+            const fields = document.getElementById(`${type}AddressFields`);
+            if (select.value === 'new') {
+                fields.querySelectorAll('input').forEach(input => input.value = input.id === `${type}Country` ? 'Egypt' : '');
+                return;
+            }
+
+            const option = select.options[select.selectedIndex];
+            document.getElementById(`${type}Street`).value = option.dataset.street || '';
+            document.getElementById(`${type}City`).value = option.dataset.city || '';
+            document.getElementById(`${type}State`).value = option.dataset.state || '';
+            document.getElementById(`${type}PostalCode`).value = option.dataset.postal || '';
+            document.getElementById(`${type}Country`).value = option.dataset.country || 'Egypt';
+            document.getElementById(`${type}IsDefault`).checked = option.dataset.default === 'true';
+        }
+
+        // Handle installation service checkbox
+        function updateInstallationFee() {
+            const installationCheckbox = document.getElementById('installationCheckbox');
+            const installationContainer = document.getElementById('installationFeeContainer');
+
+            // Toggle visibility
+            if (installationCheckbox.checked) {
+                installationContainer.classList.remove('d-none');
+            } else {
+                installationContainer.classList.add('d-none');
+            }
+            updateCartTotal();
+        }
+
+        function updateCartTotal() {
+            let subtotalSum = 0;
+            const checkbox = document.getElementById('installationCheckbox');
+            const isChecked = checkbox.checked;
+            const installationFee = isChecked ? 300 : 0;
+
+            document.querySelectorAll('.subtotal').forEach(element => {
+                const price = parseFloat(element.dataset.price);
+                subtotalSum += price;
+            });
+
+            document.getElementById('subtotalAmount').textContent = `SAR ${subtotalSum.toFixed(2)}`;
+            const deliveryFee = parseFloat('@Model.TotalDeliveryFee');
+            const total = subtotalSum + deliveryFee + installationFee;
+            document.getElementById('cartTotal').textContent = `SAR ${total.toFixed(2)}`;
+        }
+
+        // Format card number input
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s+/g, '');
+            if (value.length > 0) {
+                value = value.match(new RegExp('.{1,4}', 'g')).join(' ');
+            }
+            e.target.value = value;
+        });
+
+        // Format expiry date input
+        document.getElementById('cardExpiry').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Initialize form on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default address if available
+            const billingSelect = document.getElementById('billingAddressSelect');
+            if (billingSelect.options.length > 1) {
+                billingSelect.value = billingSelect.querySelector('[data-default="true"]')?.value || 'new';
+                fillAddress('billing', billingSelect);
+            }
+
+            // Initialize payment method toggles
+            const paymentRadios = document.querySelectorAll('input[name="PaymentMethod"]');
+            const creditCardDetails = document.getElementById('creditCardDetails');
+
+            function togglePaymentMethod() {
+                const selectedMethod = document.querySelector('input[name="PaymentMethod"]:checked').value;
+                if (selectedMethod === 'Cash') {
+                    creditCardDetails.classList.remove('show');
+                    creditCardDetails.querySelectorAll('input').forEach(input => {
+                        input.removeAttribute('required');
+                        input.value = '';
+                    });
+                } else {
+                    creditCardDetails.classList.add('show');
+                    creditCardDetails.querySelectorAll('input').forEach(input => {
+                        input.setAttribute('required', 'required');
+                    });
+                }
+            }
+
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', togglePaymentMethod);
+            });
+
+            // Initialize payment method on page load
+            togglePaymentMethod();
+
+            // Form validation
+            document.getElementById('checkoutForm').addEventListener('submit', function(event) {
+                const paymentMethod = document.querySelector('input[name="PaymentMethod"]:checked').value;
+
+                if (paymentMethod === 'Credit Card') {
+                    const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+                    const cardExpiry = document.getElementById('cardExpiry').value;
+                    const cardCVC = document.getElementById('cardCVC').value;
+
+                    if (!/^\d{16}$/.test(cardNumber)) {
+                        event.preventDefault();
+                        showError('Please enter a valid 16-digit card number.');
+                        document.getElementById('cardNumber').focus();
+                        return false;
+                    }
+
+                    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry)) {
+                        event.preventDefault();
+                        showError('Please enter a valid expiry date in MM/YY format.');
+                        document.getElementById('cardExpiry').focus();
+                        return false;
+                    }
+
+                    if (!/^\d{3,4}$/.test(cardCVC)) {
+                        event.preventDefault();
+                        showError('Please enter a valid 3 or 4 digit security code.');
+                        document.getElementById('cardCVC').focus();
+                        return false;
+                    }
+                }
+
+                if (!document.getElementById('termsCheckbox').checked) {
+                    event.preventDefault();
+                    showError('Please agree to the terms and conditions.');
+                    return false;
+                }
+
+                return true;
+            });
+
+            function showError(message) {
+                const toast = `<div class="toast show position-fixed top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header bg-danger text-white">
+                        <strong class="me-auto">Error</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body bg-white">
+                        ${message}
+                    </div>
+                </div>`;
+
+                document.body.insertAdjacentHTML('beforeend', toast);
+
+                // Remove toast after 5 seconds
+                setTimeout(() => {
+                    const toasts = document.querySelectorAll('.toast');
+                    toasts.forEach(toast => toast.remove());
+                }, 5000);
+            }
+
+            // Focus on the first invalid field if there was a validation error
+            const focusField = '@TempData["FocusField"]';
+            if (focusField) {
+                const field = document.getElementById(focusField);
+                if (field) {
+                    field.focus();
+                    // Scroll to the field
+                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    </script>
+}
+
+<style>
+    .checkout-container {
+        max-width: 1400px;
+    }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+    .order-item {
+        transition: background-color 0.2s ease;
+    }
+
+        .order-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .payment-option {
+        background-color: #f8f9fa;
+        border-radius: 10px !important;
+        transition: all 0.3s ease;
+    }
+
+        .payment-option:hover {
+            background-color: #f1f3f5;
+        }
+
+    .payment-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 10px 15px;
+    }
+
+    .btn-primary {
+        border-radius: 8px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .progress {
+        border-radius: 10px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .additional-services .form-check-label {
+        line-height: 1.5;
+    }
+
+    .white-space-pre-line {
+        white-space: pre-line;
+    }
+</style>

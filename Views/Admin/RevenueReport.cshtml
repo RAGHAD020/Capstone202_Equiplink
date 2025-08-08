@@ -1,0 +1,68 @@
+﻿@model EquipLink.ViewModels.AdminVMs.RevenueReportViewModel
+
+@{
+    ViewData["Title"] = "Revenue Report";
+}
+
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @* @await Html.PartialAsync("_AdminSidebar") *@
+            @await Html.PartialAsync("~/Views/Admin/_AdminSidebar.cshtml")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Revenue Report</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">Revenue by Month (Last 12 Months)</h3>
+                        <p class="mb-4"><strong>Total Revenue:</strong> SAR @Model.TotalRevenue.ToString("N2")</p>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Month</th>
+                                        <th>Revenue (SAR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.RevenueByMonth != null && Model.RevenueByMonth.Any())
+                                    {
+                                        @foreach (var monthData in Model.RevenueByMonth)
+                                        {
+                                            <tr>
+                                                <td>@monthData.Year</td>
+                                                <td>@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(monthData.Month)</td>
+                                                <td>@monthData.Total.ToString("N2")</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="3" class="text-center">No revenue data available.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-outline-secondary mt-4">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

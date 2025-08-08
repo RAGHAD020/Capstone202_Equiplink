@@ -1,0 +1,42 @@
+﻿@model EquipLink.ViewModels.FrontVMs.CategoryShowViewModel
+
+@{
+    ViewData["Title"] = "Equipment in " + Model.Category.CategType;
+}
+
+<h2>@Model.Category.CategType Equipment</h2>
+<p>@Model.Category.CategDescription</p>
+
+<div class="row g-4">
+    @foreach (var item in Model.Equipment)
+    {
+        <div class="col-md-4">
+            <div class="equipment-card card h-100 border-0 shadow-lg rounded-3 overflow-hidden">
+                <div class="position-relative">
+                    <img src="@item.EquImage" class="card-img-top img-fluid" alt="@item.EquName" style="height: 200px; object-fit: cover;">
+                    <div class="position-absolute top-0 start-0 bg-success text-white p-2 rounded-end">
+                        <small>@item.EquType?.ToUpper()</small>
+                    </div>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-between p-4 bg-light">
+                    <div>
+                        <h3 class="card-title fw-bold text-dark mb-2">
+                            <a href="@Url.Action("EquipmentShow", "Front", new { id = item.EquId })" class="text-decoration-none text-dark">
+                                @item.EquName
+                            </a>
+                        </h3>
+                        <p class="text-muted mb-2">
+                            Provider: @(item.Provider?.UserFname ?? "Unknown") @(item.Provider?.UserLname ?? "")
+                        </p>
+                    </div>
+                    <div>
+                        <p class="fw-bold text-primary mb-2">SAR @item.EquPrice.ToString("F2")</p>
+                        <a href="@Url.Action("EquipmentShow", "Front", new { id = item.EquId })" class="btn btn-primary w-100 rounded-pill py-2">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

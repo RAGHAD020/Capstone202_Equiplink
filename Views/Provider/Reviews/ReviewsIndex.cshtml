@@ -1,0 +1,126 @@
+﻿@model IEnumerable<EquipLink.Models.Review>
+
+@{
+    ViewData["Title"] = "Manage Reviews";
+}
+
+<section class="py-5">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @await Html.PartialAsync("~/Views/Provider/_ProviderSidebar.cshtml")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Manage Reviews</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <!-- Reviews Table -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="fw-bold">Reviews List</h3>
+                            <input type="text" class="form-control me-2" id="searchReviews"
+                                   placeholder="Search reviews..." style="max-width: 200px;">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Review ID</th>
+                                        <th>Customer</th>
+                                        <th>Rating</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewsTableBody">
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var review in Model)
+                                        {
+                                            <tr>
+                                                <td>REV-@review.RevId</td>
+                                                <td>@(review.Customer?.UserFname ?? "Unknown") @(review.Customer?.UserLname ?? "")</td>
+                                                <td>@review.RevRatingValue / 5</td>
+                                                <td>@review.RevDate.ToString("yyyy-MM-dd")</td>
+                                                <td>@(review.RevIsVerified == 1 ? "Verified" : "Unverified")</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#reviewDetailsModal@review.RevId">
+                                                        View Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center">No reviews found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Review Details Modals -->
+@if (Model != null && Model.Any())
+{
+    @foreach (var review in Model)
+    {
+        <div class="modal fade" id="reviewDetailsModal@review.RevId" tabindex="-1"
+             aria-labelledby="reviewDetailsModalLabel@review.RevId" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reviewDetailsModalLabel@review.RevId">
+                            Review Details - REV-@review.RevId
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>Review Information</h6>
+                        <p><strong>Customer:</strong> @(review.Customer?.UserFname ?? "Unknown") @(review.Customer?.UserLname ?? "")</p>
+                        <p><strong>Rating:</strong> @review.RevRatingValue / 5</p>
+                        <p><strong>Date:</strong> @review.RevDate.ToString("yyyy-MM-dd")</p>
+                        <p><strong>Status:</strong> @(review.RevIsVerified == 1 ? "Verified" : "Unverified")</p>
+                        <p><strong>Comment:</strong> @(review.RevComment ?? "No comment")</p>
+                        <p><strong>Order ID:</strong> @(review.Ord != null ? $"ORD-{review.Ord.OrdId}" : "N/A")</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('searchReviews').addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#reviewsTableBody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
+}

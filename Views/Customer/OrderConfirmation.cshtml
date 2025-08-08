@@ -1,0 +1,170 @@
+﻿@model EquipLink.Models.Order
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <div class="success-icon mb-3">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            <h1 class="fw-bold text-success">Order Confirmed!</h1>
+                            <p class="text-muted">Thank you for your purchase. Your order has been successfully placed.</p>
+                        </div>
+
+                        <div class="order-details bg-light p-4 rounded mb-4">
+                            <h3 class="fw-bold mb-3">Order Details</h3>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Order ID:</strong> #@Model.OrdId</p>
+                                    <p><strong>Order Date:</strong> @(Model.OrdCreatedDate?.ToString("MMMM dd, yyyy") ?? "N/A")</p>
+                                    <p><strong>Status:</strong> <span class="badge bg-warning text-dark">@Model.OrdStatus</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Total Amount:</strong> <span class="text-success fw-bold">SAR @Model.OrdTotalPrice.ToString("F2")</span></p>
+                                    @if (!string.IsNullOrEmpty(Model.OrdNotes))
+                                    {
+                                            <p><strong>Notes:</strong> @Model.OrdNotes</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="order-items mb-4">
+                            <h3 class="fw-bold mb-3">Ordered Items</h3>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Equipment</th>
+                                            <th>Quantity</th>
+                                            <th>Unit Price</th>
+                                            <th>Rental Period</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.Orderequipments)
+                                        {
+                                                <tr>
+                                                    <td>
+                                                        <strong>@item.Equ.EquName</strong>
+                                                        <br>
+                                                        <small class="text-muted">@item.Equ.EquType</small>
+                                                    </td>
+                                                    <td>@item.OrdEqQuantity</td>
+                                                    <td>SAR @item.OrdEqUnitPrice.ToString("F2")</td>
+                                                    <td>
+                                                    @if (item.OrdEqStartDate.HasValue && item.OrdEqEndDate.HasValue)
+                                                    {
+                                                                <span>@item.OrdEqStartDate.Value.ToString("yyyy-MM-dd")</span>
+                                                                <br>
+                                                                <small class="text-muted">to</small>
+                                                                <br>
+                                                                <span>@item.OrdEqEndDate.Value.ToString("yyyy-MM-dd")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                                <span class="text-muted">Purchase</span>
+                                                    }
+                                                    </td>
+                                                    <td class="text-success fw-bold">SAR @item.OrdEqSubTotal.ToString("F2")</td>
+                                                </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        @if (Model.Payments.Any())
+                        {
+                                <div class="payment-details mb-4">
+                                    <h3 class="fw-bold mb-3">Payment Information</h3>
+                                @foreach (var payment in Model.Payments)
+                                {
+                                            <div class="bg-light p-3 rounded">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p><strong>Payment Method:</strong> @payment.PayMethod</p>
+                                                        <p><strong>Payment Status:</strong> 
+                                                            <span class="badge @(payment.PayStatus == "Pending" ? "bg-warning text-dark" : "bg-success")">
+                                                        @payment.PayStatus
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p><strong>Amount:</strong> <span class="text-success fw-bold">SAR @payment.PayAmount.ToString("F2")</span></p>
+                                                        <p><strong>Date:</strong> @payment.PayDate.ToString("MMMM dd, yyyy")</p>
+                                                @if (!string.IsNullOrEmpty(payment.PayTransactionId))
+                                                {
+                                                                <p><strong>Transaction ID:</strong> @payment.PayTransactionId</p>
+                                                }
+                                                    </div>
+                                                </div>
+                                        @if (!string.IsNullOrEmpty(payment.PayNotes))
+                                        {
+                                                        <p><strong>Notes:</strong> @payment.PayNotes</p>
+                                        }
+                                            </div>
+                                }
+                                </div>
+                        }
+
+                        <div class="text-center">
+                            <a href="@Url.Action("Home", "Front")" class="btn btn-primary btn-lg me-3">
+                                <i class="bi bi-house-door me-2"></i>Back to Home
+                            </a>
+                            <a href="@Url.Action("EquipmentIndex", "Front")" class="btn btn-outline-primary btn-lg">
+                                <i class="bi bi-search me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>What's Next?</strong> You will receive an email confirmation shortly. 
+                            For rental items, please be ready for pickup/delivery on the specified dates.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .success-icon {
+        animation: bounce 0.6s ease-in-out;
+    }
+
+    @@keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .table th {
+        font-weight: 600;
+    }
+
+    .card {
+        border-radius: 15px;
+    }
+
+    .btn {
+        border-radius: 25px;
+        padding: 10px 30px;
+    }
+
+    .badge {
+        font-size: 0.85em;
+    }
+</style>

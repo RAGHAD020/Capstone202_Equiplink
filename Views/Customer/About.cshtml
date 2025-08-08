@@ -1,0 +1,153 @@
+﻿@{
+    Layout = "_Layout"; // Assuming you have a shared layout named "_Layout.cshtml"
+}
+
+@section Styles {
+    <style>
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .icon-lg {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .divider {
+            background: linear-gradient(90deg, #e8af74, #df8224);
+        }
+
+        .bg-primary {
+            background: linear-gradient(90deg, #e8af74, #df8224);
+        }
+
+        .object-fit-cover {
+            object-fit: cover;
+        }
+    </style>
+}
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold text-primary text-center mb-3">About EquipLink</h1>
+                    <div class="divider mx-auto bg-gradient-primary" style="width: 80px; height: 4px;"></div>
+                </div>
+
+                <div class="card border-0 shadow-sm overflow-hidden mb-5">
+                    <div class="row g-0">
+                        <!-- Image -->
+                        <div class="col-lg-5">
+                            <img src="~/images/about.jpg" alt="EquipLink Platform" style="height: 100%;background-size: cover;" class="img-fluid">
+                        </div>
+
+                        <!-- Content -->
+                        <div class="col-lg-7">
+                            <div class="card-body p-4 p-xl-5">
+                                <h2 class="h3 fw-bold text-dark mb-4">Transforming Industrial Equipment Management</h2>
+
+                                <div class="d-flex mb-4">
+                                    <div class="me-4">
+                                        <div class="icon-circle bg-primary text-white">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">EquipLink is an innovative digital platform revolutionizing how industrial companies in Jubail manage equipment exchange. Developed by senior MIS students from Jubail Industrial College, our solution addresses a critical industry challenge.</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex mb-4">
+                                    <div class="me-4">
+                                        <div class="icon-circle bg-primary text-white">
+                                            <i class="fas fa-bullseye"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-semibold">Our Mission</h5>
+                                        <p class="mb-0">To bridge the gap between companies with unused equipment and those in need of industrial tools, creating a circular economy within the industrial sector.</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex mb-4">
+                                    <div class="me-4">
+                                        <div class="icon-circle bg-primary text-white">
+                                            <i class="fas fa-cogs"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-semibold">Comprehensive Services</h5>
+                                        <p class="mb-0">Beyond equipment listings, we offer complete lifecycle support including installation, operation, and maintenance services to ensure optimal equipment performance.</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex">
+                                    <div class="me-4">
+                                        <div class="icon-circle bg-primary text-white">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-semibold">Vision 2030 Alignment</h5>
+                                        <p class="mb-0">Supporting Saudi Vision 2030, EquipLink drives digital transformation in the industrial sector, promoting efficiency, sustainability, and smart business decisions.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Value Proposition Section -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-lg bg-primary bg-opacity-10 text-white rounded-circle mb-3 mx-auto">
+                                    <i class="fas fa-recycle"></i>
+                                </div>
+                                <h4 class="h5 fw-bold">Sustainable Solution</h4>
+                                <p>Promoting equipment reuse to reduce industrial waste and environmental impact.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-lg bg-primary bg-opacity-10 text-white rounded-circle mb-3 mx-auto">
+                                    <i class="fas fa-hand-holding-usd"></i>
+                                </div>
+                                <h4 class="h5 fw-bold">Cost Efficiency</h4>
+                                <p>Helping companies lower operational costs through shared resources.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-lg bg-primary bg-opacity-10 text-white rounded-circle mb-3 mx-auto">
+                                    <i class="fas fa-bolt"></i>
+                                </div>
+                                <h4 class="h5 fw-bold">Operational Speed</h4>
+                                <p>Accelerating project timelines through faster equipment acquisition.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

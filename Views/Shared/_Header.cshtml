@@ -1,0 +1,111 @@
+﻿<div class="container-fluid" style="margin: 0 21px;">
+    <a class="navbar-brand d-flex align-items-center" asp-controller="Front" asp-action="Home">
+        <img src="~/images/logo.png" alt="EquipLink Logo" class="imgLogo me-3">
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+            <li class="nav-item mx-2">
+                <a class="nav-link px-3 py-2 fontSize19 text-dark @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "activeee" : "")"
+                   asp-controller="Front" asp-action="Home" style="transition: all 0.3s ease;">
+                    <i class="bi bi-house-door-fill me-2"></i>Home
+                </a>
+            </li>
+
+            <li class="nav-item mx-2">
+                <a class="nav-link px-3 py-2 text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Equipment" ? "activeee" : "")"
+                   asp-controller="Front" asp-action="EquipmentIndex" style="transition: all 0.3s ease;">
+                    <i class="bi bi-cart me-2"></i>Shop Now
+                </a>
+            </li>
+
+            <li class="nav-item mx-2">
+                <a class="nav-link px-3 py-2 text-dark @(ViewContext.RouteData.Values["action"]?.ToString() == "FAQ" ? "activeee" : "")"
+                   asp-controller="Home" asp-action="FAQ" style="transition: all 0.3s ease;">
+                    <i class="bi bi-question me-2"></i>FAQ
+                </a>
+            </li>
+
+            <!-- New About Us Link -->
+            <li class="nav-item mx-2">
+                <a class="nav-link px-3 py-2 text-dark @(ViewContext.RouteData.Values["action"]?.ToString() == "About" ? "activeee" : "")"
+                   asp-controller="Home" asp-action="About" style="transition: all 0.3s ease;">
+                    <i class="bi bi-person-circle me-2"></i>About Us
+                </a>
+            </li>
+        </ul>
+
+        <div class="d-flex align-items-center">
+            <form class="d-flex me-3" asp-controller="Equipment" asp-action="Search" method="get">
+                <div class="input-group">
+                    <input class="form-control border-0 bg-light text-dark py-2" type="search"
+                           name="searchTerm" placeholder="Search equipment or services..." aria-label="Search" style="padding-left: 1rem;">
+                    <button class="btn btn-primary rounded-end-pill" type="submit" style="padding: 0.5rem 1.5rem;">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+            <!-- Cart and User Actions -->
+            <div class="d-flex align-items-center">
+                <a asp-controller="Cart" asp-action="View" class="btn btn-primary me-3 position-relative">
+                    <i class="bi bi-cart3"></i> <span class="ms-1"></span>
+                    <span class="badge bg-danger rounded-circle position-absolute top-0 end-0"
+                          style="transform: translate(50%, -50%);">
+                        @ViewBag.CartCount
+                    </span>
+                </a>
+
+                <div class="dropdown">
+                    <a href="#" class="btn btn-primary rounded-pill px-4 py-2 dropdown-toggle" data-bs-toggle="dropdown"
+                       aria-expanded="false" style="transition: all 0.3s ease;">
+                        <i class="bi bi-person-circle me-2"></i>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <span style="font-size: 10px;">Welcome, @User.Identity.Name</span>
+                        }
+                        else
+                        {
+                            <span>Welcome</span>
+                        }
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        @if (!User.Identity.IsAuthenticated)
+                        {
+                            <li><a class="dropdown-item" asp-controller="Auth" asp-action="Login">Login</a></li>
+                            <li><a class="dropdown-item" asp-controller="Auth" asp-action="Register">Register</a></li>
+                        }
+                        else
+                        {
+                            @if (User.IsInRole("Operator"))
+                            {
+                                <li><a class="dropdown-item" asp-controller="Operator" asp-action="Home">Operator Dashboard</a></li>
+                            }
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a></li>
+                            }
+                            @if (User.IsInRole("Provider"))
+                            {
+                                <li><a class="dropdown-item" asp-controller="Provider" asp-action="Home">Provider Dashboard</a></li>
+                            }
+                            @if (User.IsInRole("Customer"))
+                            {
+                                <li><a class="dropdown-item" asp-controller="Customer" asp-action="Home">My Profile</a></li>
+                            }
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button class="dropdown-item text-danger" type="submit">Logout</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

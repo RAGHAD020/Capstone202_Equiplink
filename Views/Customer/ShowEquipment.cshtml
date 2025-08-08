@@ -1,0 +1,509 @@
+﻿@model EquipLink.ViewModels.FrontVMs.EquipmentShowViewModel
+@{
+    ViewBag.Title = Model.Equipment.EquName;
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <style>
+        /* Custom styles for disabled dates */
+        .flatpickr-day.disabled {
+            background-color: #f87171 !important;
+            color: white !important;
+            border-radius: 4px;
+        }
+
+        /* Validation error styles */
+        .is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .border-danger {
+            border-color: #dc3545 !important;
+        }
+
+        /* Custom toastr styling (optional) */
+        .toast-top-right {
+            top: 20px;
+            right: 20px;
+        }
+
+        /* Animation for cart count update */
+        .animate__bounce {
+            animation-duration: 0.5s;
+        }
+    </style>
+}
+
+<section class="py-5">
+    <div class="container">
+        <div class="row bg-white g-5 align-items-start">
+            <div class="col-lg-6">
+                <img src="@Model.Equipment.EquImage" alt="@Model.Equipment.EquName"
+                     class="img-fluid rounded-3 shadow" style="height: 450px; object-fit: cover;">
+
+                <div class="mt-5">
+                    <h4 class="fw-bold text-dark mb-3">Description</h4>
+                    <p class="text-secondary">@(Model.Equipment.EquDescription ?? "No description available.")</p>
+                </div>
+                <div class="mt-5">
+                    <h4 class="fw-bold text-dark mb-3">Features</h4>
+                    @if (!string.IsNullOrEmpty(Model.Equipment.EquFeatures))
+                    {
+                        <ul class="text-secondary ps-4">
+                            @foreach (var feature in Model.Equipment.EquFeatures.Split('•').Where(f => !string.IsNullOrWhiteSpace(f)))
+                            {
+                                <li>@feature.Trim()</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-secondary">No Features available.</p>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bold text-dark mb-3">@Model.Equipment.EquName</h2>
+
+                <div class="bg-white p-4 mb-4">
+                    <h5 class="fw-bold mb-3 text-dark">Equipment Info</h5>
+                    <ul class="list-unstyled text-secondary">
+                        <li class="mb-2"><strong>Serial Number:</strong> @Model.Equipment.EquId.ToString()</li> 
+                        <li class="mb-2"><strong>Model Year:</strong> @(Model.Equipment.EquModelYear.HasValue ? Model.Equipment.EquModelYear.ToString() : "N/A")</li>
+                        <li class="mb-2"><strong>Model Number:</strong> @(Model.Equipment.EquModel ?? "N/A")</li>
+                        <li class="mb-2"><strong>Working Hours:</strong> @(Model.Equipment.EquWorkingHours.HasValue ? Model.Equipment.EquWorkingHours.ToString() + " hrs" : "N/A")</li>
+                        <li class="mb-2"><strong>Category:</strong> @(Model.Equipment.Categ?.CategType ?? "Uncategorized")</li>
+                        <li class="mb-2"><strong>Type:</strong> @Model.Equipment.EquType?.ToUpper()</li>
+                        <li class="mb-2"><strong>Availability:</strong> @Model.Equipment.EquAvailabilityStatus</li>
+                        @if (Model.Equipment.EquType == "rent")
+                        {
+                            <li class="mb-2 mt-4">
+                                <div class="d-flex align-items-center">
+                                    <span class="h4 mb-0 me-2">@Model.AverageRating.ToString("F1")</span>
+                                    <div class="star-rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            @if (i <= Math.Round(Model.AverageRating))
+                                            {
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star text-warning"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <span class="ms-2 text-muted">(@Model.ReviewCount reviews)</span>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <div class="bg-white mb-4">
+                    <h5 class="fw-bold text-dark mb-2">Price</h5>
+                    <p class="h5 text-primary mb-4" id="priceDisplay">SAR @Model.Equipment.EquPrice.ToString("F2")</p>
+                    
+                    @if (Model.Equipment.EquType == "rent")
+                    {
+                        <div class="bg-white mb-4">
+                            <h5 class="fw-bold text-dark mb-2">Select Rental Period</h5>
+
+                            <div class="mb-3">
+                                <input type="text" id="rentalRange" class="form-control" placeholder="Select rental dates">
+                                <small class="text-muted">Daily rate: SAR @Model.Equipment.EquPrice.ToString("F2")/day</small>
+                            </div>
+
+                            <form id="rentalForm" class="rental-form" data-equipment-id="@Model.Equipment.EquId">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="start_date" id="start_date">
+                                <input type="hidden" name="end_date" id="end_date">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn w-100 btn-primary rental-submit-btn">
+                                    <span class="button-text">Add to Cart with Selected Dates</span>
+                                    <span class="spinner-border spinner-border-sm d-none ms-2" role="status" aria-hidden="true"></span>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <form asp-controller="Cart" asp-action="AddToCart" asp-route-equipmentId="@Model.Equipment.EquId" method="post" class="d-flex align-items-center mt-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="quantity" value="1" min="1">
+                            <button type="submit" class="btn w-100 btn-primary text-dark fw-bold">Add to Cart</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@if (Model.Equipment.EquType == "rent")
+{
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="fw-bold mb-4 text-dark">Customer Reviews</h2>
+            <div class="row g-4">
+                <!-- Review Form or Message -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h5 class="card-title fw-bold text-dark">Write a Review</h5>
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                @if (Context.Request.Query.ContainsKey("order_id") && !string.IsNullOrEmpty(Context.Request.Query["order_id"]))
+                                {
+                                    <form asp-controller="Customer" asp-action="AddReview" asp-route-equipmentId="@Model.Equipment.EquId" method="POST">
+                                        <input type="hidden" asp-for="ReviewForm.OrderId" value="@Context.Request.Query["order_id"]">
+                                        <input type="hidden" asp-for="ReviewForm.EquipmentId" value="@Model.Equipment.EquId">
+
+                                        <div class="mb-3">
+                                            <label asp-for="ReviewForm.Rating" class="form-label">Rating</label>
+                                            <select asp-for="ReviewForm.Rating" class="form-select" required>
+                                                <option value="">Select rating</option>
+                                                <option value="5">5 Stars</option>
+                                                <option value="4">4 Stars</option>
+                                                <option value="3">3 Stars</option>
+                                                <option value="2">2 Stars</option>
+                                                <option value="1">1 Star</option>
+                                            </select>
+                                            <span asp-validation-for="ReviewForm.Rating" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="ReviewForm.Comment" class="form-label">Comment</label>
+                                            <textarea asp-for="ReviewForm.Comment" class="form-control" rows="4" placeholder="Share your experience..." required></textarea>
+                                            <span asp-validation-for="ReviewForm.Comment" class="text-danger"></span>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">
+                                        You must place an order for this equipment to leave a review. 
+                                        Please <a asp-controller="Cart" asp-action="View" class="text-primary">add to cart</a> and complete your order.
+                                    </p>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">Please <a asp-controller="Auth" asp-action="Login" class="text-primary">log in</a> to write a review.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <!-- Reviews List -->
+                <div class="col-md-6">
+                    @if (Model.Reviews.Any())
+                    {
+                        @foreach (var review in Model.Reviews)
+                        {
+                            <div class="review-card card border-0 shadow-sm mb-3">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title fw-bold text-dark">
+                                            @(review.Customer?.UserFname ?? "Anonymous") @(review.Customer?.UserLname ?? "")
+                                        </h5>
+                                        <div class="star-rating">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                @if (i <= review.RevRatingValue)
+                                                {
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-star text-warning"></i>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small mb-2">Posted on: @review.RevDate</p>
+                                    <p class="card-text">@review.RevComment</p>
+                                    @if (review.RevIsVerified == 1)
+                                    {
+                                        <span class="badge bg-success">Verified</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No reviews yet.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Configure Toastr with enhanced settings
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "timeOut": "3000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Get the daily rate from the model
+            const dailyRate = @Model.Equipment.EquPrice;
+            
+            // Initialize Flatpickr
+            const bookedRanges = @Json.Serialize(Model.Equipment.Orderequipments != null ? 
+                Model.Equipment.Orderequipments.Select(oe => new { 
+                    StartDate = oe.OrdEqStartDate?.ToString("yyyy-MM-dd"), 
+                    EndDate = oe.OrdEqEndDate?.ToString("yyyy-MM-dd") 
+                }) : new List<object>());
+
+            let bookedDates = [];
+
+            bookedRanges.forEach(range => {
+                if (range.StartDate && range.EndDate) {
+                    let current = new Date(range.StartDate);
+                    const end = new Date(range.EndDate);
+                    while (current <= end) {
+                        bookedDates.push(current.toISOString().split('T')[0]);
+                        current.setDate(current.getDate() + 1);
+                    }
+                }
+            });
+
+            // Function to update price display
+            function updatePriceDisplay(days) {
+                const totalPrice = dailyRate * days;
+                const priceElement = document.querySelector('#priceDisplay');
+                if (priceElement) {
+                    priceElement.innerHTML = `SAR ${totalPrice.toFixed(2)} <small class="text-muted">(${days} days × SAR ${dailyRate.toFixed(2)}/day)</small>`;
+                }
+            }
+
+            // Function to reset price display
+            function resetPriceDisplay() {
+                const priceElement = document.querySelector('#priceDisplay');
+                if (priceElement) {
+                    priceElement.textContent = `SAR ${dailyRate.toFixed(2)}`;
+                }
+            }
+
+            // Function to add visual validation feedback
+            function addValidationError(element) {
+                element.addClass('is-invalid');
+                element.addClass('border-danger');
+                
+                // Remove validation styling after 3 seconds
+                setTimeout(() => {
+                    element.removeClass('is-invalid border-danger');
+                }, 3000);
+            }
+
+            // Function to remove validation error styling
+            function removeValidationError(element) {
+                element.removeClass('is-invalid border-danger');
+            }
+
+            flatpickr("#rentalRange", {
+                mode: "range",
+                minDate: "today",
+                dateFormat: "Y-m-d",
+                disable: bookedDates,
+                onChange: function(selectedDates) {
+                    const rangeInput = $('#rentalRange');
+                    
+                    if (selectedDates.length === 2) {
+                        const startDate = selectedDates[0];
+                        const endDate = selectedDates[1];
+                        
+                        document.getElementById('start_date').value = startDate.toISOString().slice(0, 10);
+                        document.getElementById('end_date').value = endDate.toISOString().slice(0, 10);
+                        
+                        // Calculate days and update price
+                        const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                        updatePriceDisplay(days);
+                        
+                        // Remove validation error styling when dates are selected
+                        removeValidationError(rangeInput);
+                        
+                    } else {
+                        // Clear the hidden fields if dates are not properly selected
+                        document.getElementById('start_date').value = '';
+                        document.getElementById('end_date').value = '';
+                        resetPriceDisplay();
+                    }
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const date = dayElem.dateObj.toISOString().split('T')[0];
+                    if (bookedDates.includes(date)) {
+                        dayElem.classList.add('disabled');
+                    }
+                }
+            });
+
+            // Enhanced rental form submission - EXACTLY like your working code pattern
+            $('.rental-form').on('submit', function(e) {
+                e.preventDefault();
+
+                // Check if user is authenticated first
+                const isAuthenticated = @Json.Serialize(User.Identity.IsAuthenticated);
+
+                if (!isAuthenticated) {
+                    const returnUrl = encodeURIComponent(window.location.href);
+                    window.location.href = '@Url.Action("Login", "Auth")' + '?returnUrl=' + returnUrl;
+                    return;
+                }
+
+                const form = $(this);
+                const equipmentId = form.data('equipment-id');
+                const startDate = $('#start_date').val();
+                const endDate = $('#end_date').val();
+                const rentalRangeInput = $('#rentalRange');
+                const submitBtn = form.find('.rental-submit-btn');
+                const spinner = submitBtn.find('.spinner-border');
+                const buttonText = submitBtn.find('.button-text');
+
+                // Enhanced validation with visual feedback
+                if (!startDate || !endDate || startDate.trim() === '' || endDate.trim() === '') {
+                    // Add visual validation feedback
+                    addValidationError(rentalRangeInput);
+                    
+                    // Show toastr error message
+                    toastr.error('Please select rental start and end dates before adding to cart!', 'Rental Dates Required');
+                    
+                    // Focus on the input field
+                    rentalRangeInput.focus();
+                    
+                    // Add shake animation if available
+                    if (rentalRangeInput.length) {
+                        rentalRangeInput.addClass('animate__animated animate__shakeX');
+                        setTimeout(() => {
+                            rentalRangeInput.removeClass('animate__animated animate__shakeX');
+                        }, 1000);
+                    }
+                    
+                    return false;
+                }
+
+                // Additional validation: check if dates are valid
+                const startDateObj = new Date(startDate);
+                const endDateObj = new Date(endDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (startDateObj < today) {
+                    addValidationError(rentalRangeInput);
+                    toastr.error('Start date cannot be in the past!', 'Invalid Date');
+                    return false;
+                }
+
+                if (endDateObj <= startDateObj) {
+                    addValidationError(rentalRangeInput);
+                    toastr.error('End date must be after start date!', 'Invalid Date Range');
+                    return false;
+                }
+
+                // Show loading state - EXACTLY like your working code
+                submitBtn.prop('disabled', true);
+                spinner.removeClass('d-none');
+                buttonText.text('Adding to Cart...');
+
+                // Get anti-forgery token
+                const token = form.find('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '/Cart/AddToCartAjax',
+                    type: 'POST',
+                    data: {
+                        equipmentId: equipmentId,
+                        quantity: 1,
+                        start_date: startDate,
+                        end_date: endDate,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Show success notification with Toastr
+                            toastr.success(response.message, 'Success!', {
+                                onShown: function() {
+                                    // Update cart count
+                                    updateCartCount(response.cartCount);
+                                }
+                            });
+
+                            // Show success feedback on button
+                            buttonText.text('Added to Cart!');
+                            submitBtn.prepend('<i class="bi bi-check-circle-fill me-2"></i>');
+                            
+                            // Reset after 2 seconds
+                            setTimeout(() => {
+                                buttonText.text('Add to Cart with Selected Dates');
+                                submitBtn.find('.bi-check-circle-fill').remove();
+                                submitBtn.prop('disabled', false);
+                            }, 2000);
+                        } else {
+                            toastr.error(response.message || 'Failed to add item to cart', 'Error!');
+                            // Reset button on error
+                            buttonText.text('Add to Cart with Selected Dates');
+                            submitBtn.prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        toastr.error('An error occurred while adding item to cart', 'Error!');
+                        console.error('AJAX Error:', error);
+                        console.error('Response:', xhr.responseText);
+                        
+                        // Reset button on error
+                        buttonText.text('Add to Cart with Selected Dates');
+                        submitBtn.prop('disabled', false);
+                    },
+                    complete: function() {
+                        // Reset button state - EXACTLY like your working code
+                        spinner.addClass('d-none');
+                    }
+                });
+            });
+
+            // Update cart count function
+            function updateCartCount(count) {
+                // Update cart count in navigation
+                const cartCountElement = $('.cart-count, #cart-count, .badge');
+                if (cartCountElement.length) {
+                    cartCountElement.text(count);
+
+                    // Add bounce animation
+                    cartCountElement.addClass('animate__animated animate__bounce');
+                    setTimeout(() => {
+                        cartCountElement.removeClass('animate__animated animate__bounce');
+                    }, 1000);
+                }
+            }
+
+            // Debug logging to ensure script is loaded
+            console.log('Rental form validation script loaded successfully');
+        });
+    </script>
+}

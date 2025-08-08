@@ -1,0 +1,178 @@
+﻿@model EquipLink.ViewModels.AdminVMs.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <style>
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+    </style>
+}
+
+<!-- Dashboard Section -->
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @* @await Html.PartialAsync("_AdminSidebar") *@
+            @await Html.PartialAsync("~/Views/Admin/_AdminSidebar.cshtml")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-5">Admin Dashboard</h1>
+
+                <!-- Metrics -->
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
+                    <div class="col">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-users mb-2"></i>
+                            <h5 class="fw-bold">Total Providers</h5>
+                            <p class="display-6">@Model.TotalProviders</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-user-check mb-2"></i>
+                            <h5 class="fw-bold">Active Users</h5>
+                            <p class="display-6">@Model.ActiveUsers</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-exclamation-triangle mb-2"></i>
+                            <h5 class="fw-bold">Pending Requests</h5>
+                            <p class="display-6">@Model.PendingRequests</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-chart-line mb-2"></i>
+                            <h6 class="fw-bold">Revenue (Last Month)</h6>
+                            <p class="display-6">SAR @Model.TotalRevenue.ToString("N2")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <div class="chart-container dashboard-card">
+                            <h5 class="fw-bold mb-3">Provider Activity (Last 6 Months)</h5>
+                            <div id="providerActivityChart"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-container dashboard-card">
+                            <h5 class="fw-bold mb-3">User Type Distribution</h5>
+                            <div id="userTypeChart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Provider Activities -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card dashboard-card mb-4">
+                            <div class="card-body">
+                                <h3 class="fw-bold mb-4">Recent Provider Registrations</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Provider ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Registration Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.RecentProviders != null && Model.RecentProviders.Any())
+                                            {
+                                                @foreach (var provider in Model.RecentProviders)
+                                                {
+                                                    <tr>
+                                                        <td>PROV-@provider.UserId</td>
+                                                        <td>@($"{provider.UserFname} {provider.UserLname}")</td>
+                                                        <td>@provider.UserEmail</td>
+                                                        <td>@provider.UserCreatedDate?.ToString("MM/dd/yyyy")</td>
+                                                        <td>@(provider.UserIsActive == 1 ? "Active" : "Inactive")</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="5" class="text-center">No recent providers found.</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.41.0/dist/apexcharts.min.js"></script>
+    <script>
+        // Provider Activity Chart
+        var providerActivityOptions = {
+            chart: {
+                type: 'bar',
+                height: 300,
+                toolbar: { show: false }
+            },
+            series: [{
+                name: 'New Providers',
+                data: @Html.Raw(Json.Serialize(Model.ProviderActivity))
+            }],
+            xaxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+            },
+            colors: ['#17a2b8'],
+            plotOptions: { bar: { horizontal: false } },
+            tooltip: { theme: 'dark' }
+        };
+        var providerActivityChart = new ApexCharts(document.querySelector("#providerActivityChart"), providerActivityOptions);
+        providerActivityChart.render();
+
+        // User Type Distribution Chart
+        var userTypeOptions = {
+            chart: {
+                type: 'pie',
+                height: 300
+            },
+            series: @Html.Raw(Json.Serialize(Model.UserTypeDistribution)),
+            labels: ['Providers', 'Customers', 'Admins'],
+            colors: ['#e3c45e', '#d0c7ae', '#826810'],
+            legend: {
+                position: 'bottom',
+                labels: { colors: '#333' }
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: { height: 250 },
+                    legend: { position: 'bottom' }
+                }
+            }]
+        };
+        var userTypeChart = new ApexCharts(document.querySelector("#userTypeChart"), userTypeOptions);
+        userTypeChart.render();
+    </script>
+}

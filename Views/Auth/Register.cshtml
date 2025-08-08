@@ -1,0 +1,195 @@
+﻿@using EquipLink.ViewModels.AuthVMs
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="card shadow p-4 mx-auto" style="max-width: 700px;">
+            <h4 class="fw-bold text-center mb-4">Register with EquipLink</h4>
+
+            <form id="registerForm" method="POST" asp-action="Register" asp-controller="Auth">
+                @Html.AntiForgeryToken()
+
+                <!-- User Type -->
+                <div class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="user-type-card card h-100 border-0 shadow-sm text-center p-3 @(Model?.UserType == "Customer" ? "active" : "")" data-type="Customer">
+                                <i class="bi bi-person-fill display-6 text-primary mb-2"></i>
+                                <h5 class="card-title fw-bold">Customer</h5>
+                                <p class="card-text text-muted">Rent or buy equipment.</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="user-type-card card h-100 border-0 shadow-sm text-center p-3 @((Model?.UserType ?? "") == "Provider" ? "active" : "")" data-type="Provider">
+                                <i class="bi bi-shop display-6 text-primary mb-2"></i>
+                                <h5 class="card-title fw-bold">Provider</h5>
+                                <p class="card-text text-muted">Offer your equipment.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="userType" name="UserType" value="@Model?.UserType" required>
+                    <span asp-validation-for="UserType" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <!-- Personal Info -->
+                    <div class="mb-3 col-md-6">
+                        <label for="UserFname" class="form-label fw-bold">First Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="UserFname" name="UserFname" value="@Model?.UserFname" required>
+                        <span asp-validation-for="UserFname" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="UserLname" class="form-label fw-bold">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="UserLname" name="UserLname" value="@Model?.UserLname" required>
+                        <span asp-validation-for="UserLname" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="UserEmail" class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="UserEmail" name="UserEmail" value="@Model?.UserEmail" required>
+                        <span asp-validation-for="UserEmail" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="UserNationalId" class="form-label fw-bold">National ID <span class="text-danger">*</span></label>
+                        <input type="text"
+                               class="form-control"
+                               id="UserNationalId"
+                               name="UserNationalId"
+                               value="@Model?.UserNationalId"
+                               maxlength="10"
+                               minlength="10"
+                               pattern="\d{10}"
+                               inputmode="numeric"
+                               required>
+                        <span asp-validation-for="UserNationalId" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="UserPhone" class="form-label fw-bold">Phone <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" id="UserPhone" name="UserPhone" value="@Model?.UserPhone">
+                        <span asp-validation-for="UserPhone" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="UserPassword" class="form-label fw-bold">Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="UserPassword" name="UserPassword" required>
+                        <span asp-validation-for="UserPassword" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="UserPasswordConfirmation" class="form-label fw-bold">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="UserPasswordConfirmation" name="UserPasswordConfirmation" required>
+                        <span asp-validation-for="UserPasswordConfirmation" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Company Info: Only for Provider -->
+                <div id="companyFields" class="mt-5 @(Model?.UserType == "Provider" ? "" : "d-none")">
+                    <hr>
+                    <h6 class="fw-bold mb-4 text-center">Company Information</h6>
+                    <p class="text-muted">Company info is required when you register as provider</p>
+
+                    <div class="row">
+                        <div class="mb-3 col-md-6">
+                            <label for="CoName" class="form-label fw-bold">Company Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="CoName" name="CoName" value="@Model?.CoName">
+                            <span asp-validation-for="CoName" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3 col-md-6">
+                            <label for="CoEmail" class="form-label fw-bold">Company Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="CoEmail" name="CoEmail" value="@Model?.CoEmail">
+                            <span asp-validation-for="CoEmail" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3 col-md-6">
+                            <label for="CoPhone" class="form-label fw-bold">Company Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="CoPhone" name="CoPhone" value="@Model?.CoPhone">
+                            <span asp-validation-for="CoPhone" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3 col-md-6">
+                            <label for="CoTaxNumber" class="form-label fw-bold">Tax Number <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="CoTaxNumber"
+                                   name="CoTaxNumber"
+                                   value="@Model?.CoTaxNumber"
+                                   maxlength="10"
+                                   minlength="10"
+                                   pattern="\d{10}"
+                                   inputmode="numeric"
+                                   required>
+                            <span asp-validation-for="CoTaxNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">Register</button>
+
+                <p class="text-center mt-3">
+                    Already have an account?
+                    <a asp-action="Login" asp-controller="Auth" class="text-primary">Login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Function to toggle company fields and validation
+            function toggleCompanyFields(isProvider) {
+                const companyFields = document.getElementById('companyFields');
+                if (isProvider) {
+                    companyFields.classList.remove('d-none');
+                    // Add required attributes
+                    document.getElementById('CoName').required = true;
+                    document.getElementById('CoEmail').required = true;
+                    document.getElementById('CoPhone').required = true;
+                    document.getElementById('CoTaxNumber').required = true;
+                } else {
+                    companyFields.classList.add('d-none');
+                    // Remove required attributes
+                    document.getElementById('CoName').required = false;
+                    document.getElementById('CoEmail').required = false;
+                    document.getElementById('CoPhone').required = false;
+                    document.getElementById('CoTaxNumber').required = false;
+                    // Clear values
+                    document.getElementById('CoName').value = '';
+                    document.getElementById('CoEmail').value = '';
+                    document.getElementById('CoPhone').value = '';
+                    document.getElementById('CoTaxNumber').value = '';
+                    // Clear validation errors
+                    $('span[data-valmsg-for="CoName"]').text('');
+                    $('span[data-valmsg-for="CoEmail"]').text('');
+                    $('span[data-valmsg-for="CoPhone"]').text('');
+                    $('span[data-valmsg-for="CoTaxNumber"]').text('');
+                }
+            }
+
+            // Initialize user type selection
+            document.querySelectorAll('.user-type-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.user-type-card').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const userType = this.getAttribute('data-type');
+                    document.getElementById('userType').value = userType;
+
+                    toggleCompanyFields(userType === 'Provider');
+                });
+            });
+
+            // Set initial state
+            const initialUserType = document.getElementById('userType').value || 'Customer';
+            toggleCompanyFields(initialUserType === 'Provider');
+
+            // Set active card based on initial value
+            const initialCard = document.querySelector(`.user-type-card[data-type="${initialUserType}"]`);
+            if (initialCard) {
+                initialCard.classList.add('active');
+            }
+        });
+    </script>
+}

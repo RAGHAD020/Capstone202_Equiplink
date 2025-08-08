@@ -1,0 +1,72 @@
+﻿@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+
+    string GetActiveClass(string controller, string action = null)
+    {
+        var isControllerMatch = string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase);
+        var isActionMatch = action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+
+        return isControllerMatch && isActionMatch ? "active text-dark" : "";
+    }
+}
+
+<div class="col-lg-3 col-md-4 sidebar">
+    <h4 class="fw-bold mb-4 ps-3">Admin Dashboard</h4>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "Dashboard")" asp-controller="Admin" asp-action="Dashboard">
+                <i class="fas fa-tachometer-alt me-2"></i> Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "Users")" asp-controller="Admin" asp-action="Users">
+                <i class="fas fa-user-cog me-2"></i> Manage Users
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "Requests")" asp-controller="Admin" asp-action="Requests">
+                <i class="fas fa-clipboard-list me-2"></i> Equipment Requests
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "Orders")" asp-controller="Admin" asp-action="Orders">
+                <i class="fas fa-shopping-cart me-2"></i> Manage Orders
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "Reviews")" asp-controller="Admin" asp-action="Reviews">
+                <i class="fas fa-star me-2"></i> Manage Reviews
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "Profile")" asp-controller="Admin" asp-action="Profile">
+                <i class="fas fa-user me-2"></i> Profile
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "RevenueReport")" asp-controller="Admin" asp-action="RevenueReport">
+                <i class="fas fa-chart-bar me-2"></i> Revenue Reports
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @GetActiveClass("Admin", "OrderReport")" asp-controller="Admin" asp-action="OrderReport">
+                <i class="fas fa-chart-bar me-2"></i> Orders Reports
+            </a>
+        </li>
+    </ul>
+</div>
+
+<style>
+    .sidebar .nav-link i {
+        width: 20px;
+        text-align: center;
+    }
+
+    .sidebar h4 {
+        color: #495057;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+</style>

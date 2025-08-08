@@ -1,0 +1,367 @@
+/* ========================================= */
+/* CUSTOM.CSS - COMPLETE FILE WITH UPDATES */
+/* ========================================= */
+
+:root {
+    --primary: #FAE996;
+    --secondary: #B87B02;
+    --accent: #34D399;
+    --background: #F9FAFB;
+    --text: #1F2937;
+}
+
+.text-primary {
+    color: var(--secondary) !important;
+}
+
+.imgLogo {
+    /*object-fit: cover;*/
+    height: 80px;
+    width: 124px;
+}
+
+.fontSize19 {
+    font-size: 19px;
+}
+
+.activeee {
+    background: white;
+    border-radius: 10px;
+}
+
+.bg-dark {
+    background: var(--primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--secondary) !important;
+    color: white !important;
+    border: none;
+}
+
+
+.footer {
+    background-color: var(--primary) !important;
+    color: white;
+    flex-shrink: 0; 
+    margin-top: auto; 
+}
+
+.dashboard-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dashboard-card {
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 6px 20px rgba(52, 211, 153, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #E5E7EB;
+}
+
+    .dashboard-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px rgba(52, 211, 153, 0.15);
+    }
+
+.action-btn {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+    .action-btn:hover {
+        background-color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+.sidebar {
+    position: sticky;
+    top: 100px;
+    min-height: calc(100vh - 56px);
+    background: linear-gradient(to bottom, #F1F5F9, #E0E7FF);
+    padding-top: 20px;
+    border-right: 1px solid #D1D5DB;
+}
+
+    .sidebar .nav-link {
+        color: var(--text);
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin: 5px 10px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        font-weight: 500;
+    }
+
+        .sidebar .nav-link.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #E0E7FF;
+            color: var(--primary);
+        }
+
+.table thead th {
+    background-color: #F3F4F6;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.table tbody tr:hover {
+    background-color: #F9FAFB;
+}
+
+.header-time {
+    font-size: 0.9rem;
+    color: var(--secondary);
+}
+
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.collapse.show {
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.modal-content {
+    border-radius: 12px;
+}
+
+.status-select {
+    max-width: 150px;
+}
+
+.verified {
+    color: var(--accent);
+}
+
+.bg-banner {
+    background: #00000094;
+    padding: 14px;
+}
+
+.cate {
+    font-size: 3.5rem;
+    color: #eac823;
+}
+
+.hero-bg {
+    background: linear-gradient(rgb(255 255 255 / 0%), rgb(255 255 255 / 0%)), url(../images/bg.jpg);
+    background-size: cover;
+    background-position: center;
+    color: white;
+}
+
+.category-card,
+.equipment-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+    .category-card:hover,
+    .equipment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+.login-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.filter-section {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.checkout-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.summary-card,
+.form-card,
+.profile-card,
+.section-card,
+.invoice-card {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.payment-option {
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .payment-option:hover {
+        background-color: #f8f9fa;
+    }
+
+    .payment-option input:checked + .payment-label {
+        background-color: #e7f1ff;
+        border-color: var(--primary);
+    }
+
+.address-select,
+.address-item {
+    max-width: 400px;
+    transition: background-color 0.3s;
+}
+
+    .address-item:hover {
+        background-color: #f8f9fa;
+    }
+
+.print-btn {
+    transition: background-color 0.3s;
+}
+
+    .print-btn:hover {
+        background-color: var(--primary);
+    }
+
+.nav-tabs .nav-link {
+    color: var(--secondary);
+}
+
+    .nav-tabs .nav-link.active {
+        background-color: #e7f1ff;
+        border-color: var(--primary);
+    }
+
+.user-type-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    border: 2px solid transparent !important;
+}
+
+    .user-type-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-type-card.active {
+        border-color: var(--primary);
+        background-color: #e7f1ff;
+    }
+
+        .user-type-card.active i {
+            color: var(--primary) !important;
+        }
+
+
+.register-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.equipment-img {
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.review-card {
+    transition: box-shadow 0.3s;
+}
+
+    .review-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+.star-rating .bi-star-fill {
+    color: var(--accent);
+}
+
+.profile-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.metric-card {
+    border: none;
+    text-align: center;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+    .metric-card i {
+        font-size: 2rem;
+        opacity: 0.8;
+    }
+
+.chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.cart-item {
+    transition: box-shadow 0.3s;
+}
+
+    .cart-item:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+.date-picker {
+    max-width: 150px;
+}
+
+.type-select {
+    max-width: 120px;
+}
+
+.btn-outline-primary {
+    color: #412c02;
+    border-color: #412c02;
+}
+
+.btn:hover {
+    background-color: #fae996;
+}
+
+.equipment-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+    .equipment-card:hover .card-img-top {
+        transform: scale(1.05);
+        transition: transform 0.3s ease;
+    }
+
+    .equipment-card .card-body {
+        border-top: 1px solid #e9ecef;
+    }
+
+.filter-section {
+    position: sticky;
+    top: 20px;
+}
+
+@media (max-width: 768px) {
+    .equipment-card .card-img-top {
+        height: 150px;
+    }
+}
+
+.user-type-card.active {
+    border: 2px solid #0d6efd !important;
+    background-color: #f8f9fa;
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+}
+
+
+

@@ -1,0 +1,183 @@
+﻿@removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@removeTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@model IEnumerable<EquipLink.Models.Maintenance>
+
+@{
+    ViewBag.Title = "Maintenance Requests";
+}
+
+<section class="py-5">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @Html.Partial("_ProviderSidebar")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Maintenance Requests</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                }
+
+                <!-- Maintenance Requests Table -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="fw-bold">Maintenance Requests List</h3>
+                            <input type="text" class="form-control me-2" id="searchMaintenance"
+                                   placeholder="Search maintenance requests..." style="max-width: 200px;">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Maintenance ID</th>
+                                        <th>Order ID</th>
+                                        <th>Registration Date</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="maintenanceTableBody">
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var maintenance in Model)
+                                        {
+                                            <tr>
+                                                <td>MAIN-@maintenance.MainId</td>
+                                                <td>ORD-@(maintenance.Ord?.OrdId ?? 0)</td>
+                                                <td>@(maintenance.MainRegDate != default(DateOnly) ? maintenance.MainRegDate.ToString("yyyy-MM-dd") : "N/A")</td>
+                                                <td>SAR @((maintenance.MainAmount ?? 0).ToString("F2"))</td>
+                                                <td>@maintenance.MainStatus</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary action-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#maintenanceDetailsModal@(maintenance.MainId)">
+                                                        View Details
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-info action-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#updateStatusModal@(maintenance.MainId)"
+                                                            onclick="console.log('Clicked update for MAIN-@maintenance.MainId')">
+                                                        Update Status
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center">No maintenance requests found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modals -->
+@if (Model != null && Model.Any())
+{
+    @foreach (var maintenance in Model)
+    {
+        <!-- Maintenance Details Modal -->
+        <div class="modal fade" id="maintenanceDetailsModal@(maintenance.MainId)" tabindex="-1"
+             aria-labelledby="maintenanceDetailsModalLabel@(maintenance.MainId)" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="maintenanceDetailsModalLabel@(maintenance.MainId)">
+                            Maintenance Details - MAIN-@maintenance.MainId
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6>Maintenance Information</h6>
+                        <p><strong>Order ID:</strong> ORD-@(maintenance.Ord?.OrdId ?? 0)</p>
+                        <p><strong>Registration Date:</strong> @(maintenance.MainRegDate != default(DateOnly) ? maintenance.MainRegDate.ToString("yyyy-MM-dd") : "N/A")</p>
+                        <p><strong>Amount:</strong> SAR @((maintenance.MainAmount ?? 0).ToString("F2"))</p>
+                        <p><strong>Status:</strong> @maintenance.MainStatus</p>
+                        <p><strong>Completed Date:</strong> @(maintenance.MainCompletedDate.HasValue ? maintenance.MainCompletedDate.Value.ToString("yyyy-MM-dd") : "N/A")</p>
+                        <p><strong>Description:</strong> @(maintenance.MainDescription ?? "No description")</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Status Modal -->
+        <div class="modal fade" id="updateStatusModal@(maintenance.MainId)" tabindex="-1"
+             aria-labelledby="updateStatusModalLabel@(maintenance.MainId)" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateStatusModalLabel@(maintenance.MainId)">
+                            Update Status - MAIN-@maintenance.MainId
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="@Url.Action("MaintenanceUpdateStatus", "Provider")" method="POST"
+                              onsubmit="console.log('Form submitted for MAIN-@maintenance.MainId with status:', this.status.value)">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maintenanceId" value="@maintenance.MainId" />
+
+                            <div class="mb-3">
+                                <label for="status_@maintenance.MainId" class="form-label fw-bold">Status</label>
+                                <select class="form-select" id="status_@maintenance.MainId" name="status" required>
+                                    <option value="Scheduled" @(maintenance.MainStatus == "Scheduled" ? " selected" : "")>Scheduled</option>
+                                    <option value="In Progress" @(maintenance.MainStatus == "In Progress" ? " selected" : "")>In Progress</option>
+                                    <option value="Completed" @(maintenance.MainStatus == "Completed" ? " selected" : "")>Completed</option>
+                                </select>
+                            </div>
+
+                           @*  <div class="mb-3">
+                                <small class="text-muted">Debug: Maintenance ID = @maintenance.MainId, Current Status = @maintenance.MainStatus</small>
+                            </div> *@
+
+                            <button type="submit" class="btn btn-primary">Update Status</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('searchMaintenance').addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#maintenanceTableBody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
+}

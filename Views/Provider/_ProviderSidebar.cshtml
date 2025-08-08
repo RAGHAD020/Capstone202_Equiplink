@@ -1,0 +1,47 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var currentArea = ViewContext.RouteData.Values["area"]?.ToString();
+}
+
+<div class="col-lg-3 col-md-4 sidebar">
+    <h4 class="fw-bold mb-4 ps-3">Provider Dashboard</h4>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link @(currentController == "Provider" && currentArea == "Provider" ? "active text-dark" : "")"
+               href="@Url.Action("Home", "Provider", new { area = "Provider" })">
+                <i class="fas fa-home me-2"></i> Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(currentController == "Equipment" && currentArea == "Provider" ? "active text-dark" : "")"
+               href="@Url.Action("Index", "Equipment", new { area = "Provider" })">
+                <i class="fas fa-tools me-2"></i> Manage Equipment
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(currentController == "Provider" && currentArea == "Provider" ? "active text-dark" : "")"
+               href="@Url.Action("OrdersIndex", "Provider", new { area = "Provider" })">
+                <i class="fas fa-shopping-cart me-2"></i> Manage Orders
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(currentController == "Provider" && currentArea == "Provider" ? "active text-dark" : "")"
+               href="@Url.Action("MaintenanceIndex", "Provider", new { area = "Provider" })">
+                <i class="fas fa-wrench me-2"></i> Maintenance Requests
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(currentController == "Provider" && currentArea == "Provider" ? "active text-dark" : "")"
+               href="@Url.Action("ReviewsIndex", "Provider", new { area = "Provider" })">
+                <i class="fas fa-star me-2"></i> Reviews
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(currentController == "Provider" && currentArea == "Provider" ? "active text-dark" : "")"
+               href="@Url.Action("Profile", "Provider", new { area = "Provider" })">
+                <i class="fas fa-user me-2"></i> Profile
+            </a>
+        </li>
+    </ul>
+</div>

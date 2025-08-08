@@ -1,0 +1,54 @@
+﻿@model EquipLink.ViewModels.CustomerVMs.CustomerProfileViewModel
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Orders.Any())
+        {
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>ORD-@order.OrdId</td>
+                    <td>@order.OrdCreatedDate?.ToString("yyyy-MM-dd")</td>
+                    <td>SAR @order.OrdTotalPrice.ToString("F2")</td>
+                    <td>@order.OrdStatus</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary action-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#orderDetailsModal@(order.OrdId)">
+                            View Details
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary action-btn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#maintenanceModal"
+                                data-order-id="@order.OrdId">
+                            Request Maintenance
+                        </button>
+                        @if (order.Reviews == null || !order.Reviews.Any())
+                        {
+                            <button class="btn btn-sm btn-success action-btn"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reviewModal@(order.OrdId)">
+                                Make Review
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">No orders found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

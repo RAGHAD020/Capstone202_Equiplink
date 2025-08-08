@@ -1,0 +1,106 @@
+﻿@{
+    ViewData["Title"] = "500 - Internal Server Error";
+    Layout = null; // Use null if you want a standalone error page, or specify your layout
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>@ViewData["Title"]</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .error-card {
+            max-width: 600px;
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            height: 80px;
+            margin: 10px;
+        }
+
+        h1 {
+            color: #dc3545;
+            font-size: 2.5rem;
+        }
+
+        p {
+            color: #6c757d;
+        }
+
+        .btn-home {
+            background-color: #007bff;
+            color: white;
+        }
+
+            .btn-home:hover {
+                background-color: #0056b3;
+                color: white;
+            }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-card">
+            <div class="logo-container">
+                <img src="https://www.microsoft.com/favicon.ico" alt="Microsoft Logo" class="logo">
+                <img src="~/images/aspnet-logo.png" alt="ASP.NET Logo" class="logo" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='">
+            </div>
+            <h1>500 - Internal Server Error</h1>
+            <p class="lead">Oops! Something went wrong on our server. We're working to resolve the issue.</p>
+            <p>Please try again later.</p>
+
+            @if (ViewData["ShowDetails"] != null && (bool)ViewData["ShowDetails"])
+            {
+                <div class="mt-4">
+                    <details class="text-start">
+                        <summary class="btn btn-outline-secondary btn-sm">Show Error Details</summary>
+                        <div class="mt-3 p-3 bg-light rounded">
+                            <p><strong>Error:</strong> @ViewData["ErrorMessage"]</p>
+                            @if (ViewData["StackTrace"] != null)
+                            {
+                                <p><strong>Stack Trace:</strong></p>
+                                <pre class="small">@ViewData["StackTrace"]</pre>
+                            }
+                        </div>
+                    </details>
+                </div>
+            }
+
+            <div class="mt-4">
+                <a href="@Url.Action("Index", "Home")" class="btn btn-home">
+                    <i class="fas fa-home me-2"></i>Return to Home
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary ms-2">
+                    <i class="fas fa-arrow-left me-2"></i>Go Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

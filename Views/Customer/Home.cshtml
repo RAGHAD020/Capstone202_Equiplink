@@ -1,0 +1,97 @@
+﻿@model EquipLink.ViewModels.FrontVMs.HomeViewModel
+
+@{
+    ViewData["Title"] = "Home - EquipLink";
+}
+
+<!-- Hero Section -->
+<section class="hero-bg py-5">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 bg-banner">
+                <h1 class="display-4 fw-bold mb-4">Rent Professional Equipment with Ease</h1>
+                <p class="lead mb-4">
+                    Discover top-quality construction, power tools, and garden equipment from verified
+                    providers in Saudi Arabia.
+                </p>
+                <a href="@Url.Action("EquipmentIndex", "Front")" class="btn btn-primary btn-lg">Shop Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Equipment Categories</h2>
+        <div class="row g-4">
+            @foreach (var category in Model.Categories)
+            {
+                <div class="col-md-4">
+                    <div class="category-card card h-100 border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi bi-tools me-3 cate"></i>
+                            <div>
+                                <h5 class="card-title fw-bold">@category.CategType</h5>
+                                <p class="card-text">@category.CategDescription</p>
+                                <a href="@Url.Action("EquipmentIndex", "Front", new { categories = new[] { category.CategId } })" class="btn btn-outline-primary">Explore</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Featured Equipment Section - Changed to "Recently Added" -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Recently Added</h2>
+        <div class="row g-4">
+            @foreach (var equipment in Model.FeaturedEquipment)
+            {
+                <div class="col-md-3">
+                    <div class="equipment-card card h-100 border-0 shadow-lg rounded-3 overflow-hidden transition-all duration-300 hover:shadow-xl">
+                        <div class="position-relative">
+                            <img src="@equipment.EquImage" class="card-img-top img-fluid" alt="@equipment.EquName" style="height: 200px; object-fit: cover;">
+                            <div class="position-absolute top-0 start-0 @(equipment.EquType == "rent" ? "bagde4" : "bagde3") text-white p-2 rounded-end">
+                                <small>@equipment.EquType?.ToUpper()</small>
+                            </div>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-between p-4 bg-light">
+                            <div>
+                                <h3 class="card-title fw-bold text-dark mb-2">@equipment.EquName</h3>
+                            </div>
+                            <div>
+                                <p class="fw-bold text-primary mb-2">SAR @equipment.EquPrice.ToString("F2")</p>
+                                <a href="@Url.Action("EquipmentShow", "Front", new { id = equipment.EquId })" class="btn btn-primary w-100 rounded-pill py-2 transition-all duration-300 hover:bg-dark">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-4">
+            <a href="@Url.Action("EquipmentIndex", "Front")" class="btn btn-link">View All Equipment</a>
+        </div>
+    </div>
+</section>
+
+<!-- Provider Invitation Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="fw-bold mb-4">Partner with EquipLink</h2>
+                <p class="text-muted mb-4">
+                    Do you have surplus equipment sitting in storage? Turn it into profit by listing it on EquipLink!
+                    Join our growing network of trusted equipment providers and reach customers across Jubail Industrial City.
+                </p>
+                <div class="d-flex justify-content-center">
+                    <a href="@Url.Action("Register", "Auth", new { User_Type = "Provider" })" class="btn btn-warning px-4 py-2 fw-bold">Become a Provider</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,58 @@
+/*html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}*/
+
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+    height: 100%; /* ? NEW: Added for flexbox layout */
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* ?? UPDATED - Complete replacement of body rule */
+body {
+    /* OLD: margin-bottom: 60px; ? REMOVED */
+    /* NEW flexbox approach: */
+    display: flex; /* ? NEW */
+    flex-direction: column; /* ? NEW */
+    height: 100%; /* ? NEW */
+    margin: 0; /* ? NEW */
+    padding: 0; /* ? NEW */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* ? MOVED FROM CUSTOM.CSS */
+    background-color: var(--background); /* ? MOVED FROM CUSTOM.CSS */
+    color: var(--text); /* ? MOVED FROM CUSTOM.CSS */
+}
+
+/* ?? NEW - Added for flexbox layout */
+main {
+    flex: 1 0 auto; /* ? NEW: Makes main content expand to fill space */
+}

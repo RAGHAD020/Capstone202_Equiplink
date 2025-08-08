@@ -1,0 +1,54 @@
+﻿@model EquipLink.Models.User
+
+@{
+    ViewData["Title"] = "Customer Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="py-5">
+    <div class="container">
+        <h1 class="fw-bold text-center mb-5">Welcome, @Model.UserFname @Model.UserLname</h1>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-circle display-4 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">My Profile</h5>
+                        <p class="card-text">Update your personal information and settings.</p>
+                        <a href="@Url.Action("Profile", "Customer", new { tab = "profile" })" class="btn btn-primary">Go to Profile</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cart-fill display-4 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">My Orders</h5>
+                        <p class="card-text">View and manage your equipment orders.</p>
+                        <a href="@Url.Action("Profile", "Customer", new { tab = "orders" })" class="btn btn-primary">Go to Orders</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-star-fill display-4 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">My Reviews</h5>
+                        <p class="card-text">Check and manage your reviews.</p>
+                        <a href="@Url.Action("Profile", "Customer", new { tab = "reviews" })" class="btn btn-primary">Go to Reviews</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <i class="bi bi-geo-alt-fill display-4 text-primary mb-3"></i>
+                        <h5 class="card-title fw-bold">My Addresses</h5>
+                        <p class="card-text">Manage your delivery addresses.</p>
+                        <a href="@Url.Action("Profile", "Customer", new { tab = "addresses" })" class="btn btn-primary">Go to Addresses</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

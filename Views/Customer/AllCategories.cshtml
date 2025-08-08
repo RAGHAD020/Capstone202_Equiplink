@@ -1,0 +1,54 @@
+﻿@model List<EquipLink.Models.Category>
+
+@{
+    ViewData["Title"] = "All Categories";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@functions {
+    private string GetCategoryIcon(string categoryType)
+    {
+        return categoryType?.ToLower() switch
+        {
+            "construction" => "bi-hammer",
+            "tools" => "bi-tools",
+            "machinery" => "bi-gear",
+            "electronics" => "bi-lightning",
+            "vehicles" => "bi-truck",
+            "heavy equipment" => "bi-wrench-adjustable",
+            "generators" => "bi-lightning-charge",
+            "pumps" => "bi-water",
+            "compressors" => "bi-wind",
+            "welding" => "bi-fire",
+            "lifting" => "bi-arrow-up-circle",
+            "concrete" => "bi-bricks",
+            "excavators" => "bi-cone-striped",
+            "cranes" => "bi-signpost",
+            "scaffolding" => "bi-ladder",
+            _ => "bi-tools"
+        };
+    }
+}
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">All Categories</h2>
+        <div class="row g-4">
+            @foreach (var category in Model)
+            {
+                <div class="col-md-4">
+                    <div class="category-card card h-100 border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <i class="bi @GetCategoryIcon(category.CategType) me-3 cate"></i>
+                            <div>
+                                <h5 class="card-title fw-bold">@category.CategType</h5>
+                                <p class="card-text">@(category.CategDescription ?? $"Explore our range of {category.CategType.ToLower()} equipment")</p>
+                                <a href="@Url.Action("EquipmentIndex", "Front", new { categories = new[] { category.CategId } })" class="btn btn-outline-primary">Explore</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

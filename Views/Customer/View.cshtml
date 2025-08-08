@@ -1,0 +1,600 @@
+﻿@model EquipLink.ViewModels.CartVMs.CartViewModel
+@{
+    ViewData["Title"] = "Your Shopping Cart";
+}
+
+@section styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.32/sweetalert2.min.css" rel="stylesheet">
+
+    <style>
+        .cart-item {
+            transition: all 0.3s ease;
+        }
+
+            .cart-item:hover {
+                background-color: rgba(0, 0, 0, 0.02);
+            }
+
+        .hover-primary:hover {
+            color: #0d6efd !important;
+        }
+
+        .object-fit-cover {
+            object-fit: cover;
+        }
+
+        .availability-badge {
+            color: #28a745;
+            background-color: rgba(40, 167, 69, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        .quantity-input {
+            max-width: 160px;
+        }
+
+        .quantity-input .form-control {
+            text-align: center;
+        }
+
+        .subtotal {
+            font-weight: 600;
+        }
+
+        .badge.bg-info {
+            background-color: #0dcaf0 !important;
+        }
+
+        .badge.bg-success {
+            background-color: #198754 !important;
+        }
+    </style>
+}
+
+<section class="py-5 bg-light">
+    <div class="container cart-container">
+        <div class="row justify-content-center">
+            <div class="col-md-11">
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    <div class="card-header bg-white border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="fw-bold mb-0 h4">Your Shopping Cart</h1>
+                            <span class="badge bg-secondary rounded-pill">@Model.CartItems.Count items</span>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <!-- Cart Items -->
+                        @if (Model.CartItems.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-borderless mb-0">
+                                    <thead class="bg-light d-none d-md-table-header-group">
+                                        <tr>
+                                            <th class="ps-4" style="width: 45%">Product</th>
+                                            <th class="text-center">Rental Period</th>
+                                            @* <th class="text-center">Price</th> *@
+                                            <th class="text-center pe-4">Quantity</th>
+                                            <th class="text-center">Subtotal</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.CartItems.Select((value, index) => new { value, index }))
+                                        {
+                                            <tr class="cart-item border-top">
+                                                <!-- Product Image and Info -->
+                                                <td class="ps-4 py-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3" style="width: 80px; height: 80px; overflow: hidden;">
+                                                            <img src="@(!string.IsNullOrEmpty(item.value.Equipment.EquImage) ? item.value.Equipment.EquImage : "https://via.placeholder.com/80")"
+                                                                 alt="@item.value.Equipment.EquName"
+                                                                 class="img-fluid rounded-3 h-100 w-100 object-fit-cover">
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="fw-bold mb-1">
+                                                                <a asp-action="EquipmentShow" asp-controller="Front" asp-route-id="@item.value.Equipment.EquId"
+                                                                   class="text-decoration-none text-dark hover-primary">
+                                                                    @item.value.Equipment.EquName
+                                                                </a>
+                                                            </h6>
+                                                            <div class="d-flex align-items-center mb-1">
+                                                                <span class="badge bg-@(item.value.Type == "Rent" ? "info" : "success") me-2">
+                                                                    @(item.value.Type == "Rent" ? "Rental" : "Purchase")
+                                                                </span>
+                                                                <span class="text-muted small">
+                                                                    SAR @item.value.Equipment.EquPrice.ToString("F2")@(item.value.Type == "Rent" ? "/day" : "")
+                                                                </span>
+                                                            </div>
+                                                            <div class="availability-badge small">
+                                                                <i class="bi bi-check-circle-fill text-success me-1"></i>
+                                                                Available
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Rental Period -->
+                                                <td class="align-middle text-center">
+                                                    @if (item.value.Equipment.EquType == "rent" && item.value.Type == "Rent")
+                                                    {
+                                                        var days = (item.value.EndDate - item.value.StartDate).Days;
+                                                        <div class="text-center">
+                                                            <span class="text-muted fst-italic">@days days</span>
+                                                            <div class="small text-muted">
+                                                                @item.value.StartDate.ToString("MMM d") - @item.value.EndDate.ToString("MMM d")
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="text-center">
+                                                            <span class="text-muted fst-italic">One-time purchase</span>
+                                                        </div>
+                                                    }
+                                                </td>
+
+                                                <!-- Unit Price -->
+
+                                                <td class="align-middle text-center">
+                                                    <span class="d-md-none small text-muted">Price: </span>
+                                                    @if (item.value.Equipment.EquType == "rent" && item.value.Type == "Rent")
+                                                    {
+                                                        <!-- For rentals, show daily rate -->
+                                                        <div class="text-center">
+                                                            <span>SAR @item.value.Equipment.EquPrice.ToString("F2")/day</span>
+                                                            @if (item.value.StartDate != null && item.value.EndDate != null)
+                                                            {
+                                                                var days = (item.value.EndDate - item.value.StartDate).Days;
+                                                                <div class="small text-muted">(@days days)</div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="d-md-none small text-muted">Price: </span>
+                                                        <span>SAR @item.value.Equipment.EquPrice.ToString("F2")</span>
+                                                    }                                 
+                                                </td>
+                                                @* <td class="align-middle text-center">
+                                                    <span class="d-md-none small text-muted">Price: </span>
+                                                    SAR @item.value.Equipment.EquPrice.ToString("F2")
+                                                </td> *@
+
+                                                <!-- Quantity -->
+                                                <td class="align-middle text-center pe-4">
+                                                    <div class="d-flex justify-content-center">
+                                                        <div class="input-group quantity-input">
+                                                            <button class="btn btn-outline-secondary" type="button"
+                                                                    onclick="updateQuantity(this, -1, @item.value.Equipment.EquId)">
+                                                                <i class="bi bi-dash"></i>
+                                                            </button>
+
+                                                            <input type="number" class="form-control text-center quantity-input-field"
+                                                                   value="@item.value.Quantity" min="1"
+                                                                   data-equipment-id="@item.value.Equipment.EquId"
+                                                                   data-price="@item.value.Equipment.EquPrice"
+                                                                   data-days="@((item.value.EndDate - item.value.StartDate).Days)"
+                                                                   data-is-rental="@(item.value.Equipment.EquType == "rent" && item.value.Type == "Rent" ? "true" : "false")"
+                                                                   readonly>
+
+                                                            <button class="btn btn-outline-secondary" type="button"
+                                                                    onclick="updateQuantity(this, 1, @item.value.Equipment.EquId)">
+                                                                <i class="bi bi-plus"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Subtotal -->
+                                                <td class="align-middle text-center">
+                                                    <span class="d-md-none small text-muted">Subtotal: </span>
+                                                    <span class="fw-bold subtotal" data-index="@item.value.Equipment.EquId">
+                                                        SAR @item.value.Subtotal.ToString("F2")
+                                                    </span>
+                                                    @if (item.value.Equipment.EquType == "rent" && item.value.Type == "Rent")
+                                                    {
+                                                        var days = (item.value.EndDate - item.value.StartDate).Days;
+                                                        @* <div class="small text-muted">
+                                                            (@item.value.Quantity × SAR @item.value.Equipment.EquPrice.ToString("F2") × @days days)
+                                                        </div> *@
+                                                    }
+                                                    else if (item.value.Quantity > 1)
+                                                    {
+                                                        <div class="small text-muted">
+                                                            (@item.value.Quantity × SAR @item.value.Equipment.EquPrice.ToString("F2"))
+                                                        </div>
+                                                    }
+                                                </td>
+
+                                                <!-- Remove Button -->
+                                                <td class="align-middle text-center">
+                                                    <form asp-action="RemoveFromCart" method="post" class="d-inline delete-form"
+                                                          data-equipment-name="@item.value.Equipment.EquName"
+                                                          data-equipment-id="@item.value.Equipment.EquId">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="equipmentId" value="@item.value.Equipment.EquId">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm delete-btn"
+                                                                data-bs-toggle="tooltip" data-bs-title="Remove item">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                    @if (item.value.Type == "Rent")
+                                                    {
+                                                        <button class="btn btn-outline-primary btn-sm ms-1 edit-rental-btn"
+                                                                data-equipment-id="@item.value.Equipment.EquId"
+                                                                data-bs-toggle="tooltip" data-bs-title="Edit rental dates">
+                                                            <i class="bi bi-pen"></i>
+                                                        </button>
+                                                    }
+
+                                                    @* @if (item.value.Type == "Rent")
+                                                    {
+                                                        <a asp-area="Provider"
+                                                           asp-controller="Front"
+                                                           asp-action="EquipmentShow"
+                                                           asp-route-id="@item.value.Equipment.EquId"
+                                                           asp-route-editRental="true"
+                                                           class="btn btn-outline-primary btn-sm ms-1"
+                                                           data-bs-toggle="tooltip"
+                                                           data-bs-title="Edit rental dates">
+                                                            <i class="bi bi-pen"></i>
+                                                        </a>
+                                                    } *@
+
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Cart Summary -->
+                            <!-- Cart Summary Section - Update this part in your view -->
+                            <div class="card-footer bg-white border-0 py-4">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" placeholder="Promo code">
+                                                    <button class="btn btn-outline-secondary" type="button">Apply</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-flex justify-content-md-end">
+                                            <div class="text-end">
+                                                <div class="mb-2">
+                                                    <strong class="text-muted me-3">Subtotal:</strong>
+                                                    <!-- Add cart-subtotal class here -->
+                                                    <span class="cart-subtotal">SAR @Model.Total.ToString("F2")</span>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <strong class="text-muted me-3">Estimated Delivery:</strong>
+                                                    <span>Free</span>
+                                                </div>
+                                                <div class="d-flex justify-content-between border-top pt-3">
+                                                    <strong class="text-muted me-3">Total:</strong>
+                                                    <span class="fw-bold" id="cartTotal">SAR @Model.Total.ToString("F2")</span>
+                                                </div>
+                                                <div class="d-flex justify-content-end mt-4">
+                                                    <a asp-action="ShowCheckout" class="btn btn-primary px-4  me-2">
+                                                        <i class="bi bi-chevron-left me-1"></i> Checkout
+                                                    </a>
+                                                    <a asp-action="EquipmentIndex" asp-controller="Front" class="btn btn-outline-secondary me-2">
+                                                        Continue Shopping <i class="bi bi-chevron-right ms-1"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Empty Cart -->
+                            <div class="text-center py-5">
+                                <div class="py-5">
+                                    <i class="bi bi-cart-x display-5 text-muted"></i>
+                                    <h4 class="mt-3">Your cart is empty</h4>
+                                    <p class="text-muted mb-4">Looks like you haven't added anything to your cart yet</p>
+                                    <a asp-action="EquipmentIndex" asp-controller="Front" class="btn btn-primary px-4">
+                                        <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.32/sweetalert2.all.min.js"></script>
+    <script>
+
+                // Generate base URL using Razor (processed server-side)
+        const baseShowUrl = '@Url.Action("Show", "Equipment")';
+
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Quantity update functions
+        function updateQuantity(button, change, equipmentId) {
+            const input = button.parentElement.querySelector('.quantity-input-field');
+            let quantity = parseInt(input.value) + change;
+            quantity = Math.max(1, quantity);
+            input.value = quantity;
+
+            // Update the subtotal display immediately
+            updateSubtotal(equipmentId);
+
+            // Update cart totals immediately
+            updateCartTotals();
+
+            // Save to server silently
+            saveToServer(equipmentId, quantity);
+        }
+
+        function saveToServer(equipmentId, quantity) {
+            const startDateInput = document.getElementById(`startDate${equipmentId}`);
+            const endDateInput = document.getElementById(`endDate${equipmentId}`);
+
+            const formData = new FormData();
+            formData.append('EquipmentId', equipmentId);
+            formData.append('Quantity', quantity);
+
+            // Add anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                formData.append('__RequestVerificationToken', token.value);
+            }
+
+            // Add dates if they exist
+            if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+                formData.append('StartDate', startDateInput.value);
+                formData.append('EndDate', endDateInput.value);
+            }
+
+            // Send to server silently with AJAX header
+            fetch('@Url.Action("UpdateCart", "Cart")', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .catch(error => {
+                console.error('Error updating cart:', error);
+            });
+        }
+
+        function updateSubtotal(equipmentId) {
+            const quantityInput = document.querySelector(`.quantity-input-field[data-equipment-id="${equipmentId}"]`);
+            const subtotalElement = document.querySelector(`.subtotal[data-index="${equipmentId}"]`);
+
+            if (!quantityInput || !subtotalElement) {
+                console.error('Missing elements for equipment ID:', equipmentId);
+                return;
+            }
+
+            const quantity = parseInt(quantityInput.value);
+
+            // FIXED: Get the correct price data
+            const price = parseFloat(quantityInput.getAttribute('data-price') || '0');
+            const isRental = quantityInput.getAttribute('data-is-rental') === 'true';
+
+            let finalPrice = 0;
+
+            if (isRental) {
+                // For rentals, calculate based on days
+                const days = parseInt(quantityInput.getAttribute('data-days') || '1');
+                finalPrice = price * days * quantity;
+
+                console.log(`Rental calculation: ${price} × ${days} days × ${quantity} qty = ${finalPrice}`);
+            } else {
+                // For purchases
+                finalPrice = price * quantity;
+
+                console.log(`Purchase calculation: ${price} × ${quantity} qty = ${finalPrice}`);
+            }
+
+            // Update the subtotal display
+            subtotalElement.textContent = `SAR ${finalPrice.toFixed(2)}`;
+
+            // Also update the breakdown text if it exists
+            const breakdownElement = subtotalElement.parentElement.querySelector('.small.text-muted');
+            if (breakdownElement && isRental) {
+                const days = parseInt(quantityInput.getAttribute('data-days') || '1');
+                breakdownElement.textContent = `(${quantity} × SAR ${price.toFixed(2)} × ${days} days)`;
+            } else if (breakdownElement && quantity > 1) {
+                breakdownElement.textContent = `(${quantity} × SAR ${price.toFixed(2)})`;
+            }
+        }
+
+        // Update cart totals (subtotal and total)
+        function updateCartTotals() {
+            let total = 0;
+
+            // Calculate total from all individual subtotals
+            document.querySelectorAll('.subtotal').forEach(subtotal => {
+                const priceText = subtotal.textContent.replace('SAR ', '').replace(',', '');
+                const value = parseFloat(priceText) || 0;
+                total += value;
+                console.log('Adding to total:', value, 'New total:', total);
+            });
+
+            console.log('Final total:', total);
+
+            // Update the main cart subtotal and total
+            const cartTotalElements = document.querySelectorAll('#cartTotal');
+            const subtotalElements = document.querySelectorAll('.cart-subtotal');
+
+            cartTotalElements.forEach(el => {
+                el.textContent = `SAR ${total.toFixed(2)}`;
+            });
+
+            subtotalElements.forEach(el => {
+                el.textContent = `SAR ${total.toFixed(2)}`;
+            });
+
+            // Also update any elements with class 'cart-total'
+            document.querySelectorAll('.cart-total').forEach(el => {
+                el.textContent = `SAR ${total.toFixed(2)}`;
+            });
+        }
+
+        // Update cart when date changes
+        function updateCartWithDates(equipmentId) {
+            const startDateInput = document.getElementById(`startDate${equipmentId}`);
+            const endDateInput = document.getElementById(`endDate${equipmentId}`);
+            const quantityInput = document.querySelector(`.quantity-input-field[data-equipment-id="${equipmentId}"]`);
+
+            if (!startDateInput || !endDateInput || !quantityInput) return;
+
+            const form = document.createElement('form');
+            form.action = '@Url.Action("UpdateCart", "Cart")';
+            form.method = 'POST';
+            form.style.display = 'none';
+
+            // Add anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '__RequestVerificationToken';
+                csrf.value = token.value;
+                form.appendChild(csrf);
+            }
+
+            const eqId = document.createElement('input');
+            eqId.type = 'hidden';
+            eqId.name = 'EquipmentId';
+            eqId.value = equipmentId;
+            form.appendChild(eqId);
+
+            const qty = document.createElement('input');
+            qty.type = 'hidden';
+            qty.name = 'Quantity';
+            qty.value = quantityInput.value;
+            form.appendChild(qty);
+
+            if (startDateInput.value && endDateInput.value) {
+                const startDate = document.createElement('input');
+                startDate.type = 'hidden';
+                startDate.name = 'StartDate';
+                startDate.value = startDateInput.value;
+                form.appendChild(startDate);
+
+                const endDate = document.createElement('input');
+                endDate.type = 'hidden';
+                endDate.name = 'EndDate';
+                endDate.value = endDateInput.value;
+                form.appendChild(endDate);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize subtotals and total
+            document.querySelectorAll('.quantity-input-field').forEach(input => {
+                const equipmentId = input.getAttribute('data-equipment-id');
+                if (equipmentId) {
+                    updateSubtotal(equipmentId);
+                }
+            });
+            updateCartTotals();
+        });
+
+        // Update subtotal and total when dates change
+        document.querySelectorAll('.date-picker').forEach(dateInput => {
+            dateInput.addEventListener('change', () => {
+                const equipmentId = dateInput.id.replace(/startDate|endDate/, '');
+                updateSubtotal(equipmentId);
+                updateCartTotals();
+
+                // Also update the cart on the server side
+                setTimeout(() => {
+                    updateCartWithDates(equipmentId);
+                }, 500);
+            });
+        });
+
+        // Update subtotal and total when quantity changes manually
+        document.querySelectorAll('.quantity-input-field').forEach(input => {
+            input.addEventListener('change', () => {
+                const equipmentId = input.getAttribute('data-equipment-id');
+                if (equipmentId) {
+                    updateSubtotal(equipmentId);
+                    updateCartTotals();
+                }
+            });
+        });
+
+        // SweetAlert Delete Confirmation
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const form = this.closest('.delete-form');
+                    const equipmentName = form.getAttribute('data-equipment-name');
+
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `Do you want to remove "${equipmentName}" from your cart?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, remove it!',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Removing...',
+                                text: 'Please wait while we remove the item from your cart.',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            // Edit rental dates button
+            const editRentalButtons = document.querySelectorAll('.edit-rental-btn');
+            editRentalButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const equipmentId = this.getAttribute('data-equipment-id');
+                    window.location.href = `/Front/EquipmentShow/${equipmentId}?editRental=true`;
+                });
+            });
+        });
+    </script>
+}

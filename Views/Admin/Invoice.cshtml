@@ -1,0 +1,87 @@
+﻿@model EquipLink.Models.Order
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+           @*  @await Html.PartialAsync("_AdminSidebar") *@
+            @await Html.PartialAsync("~/Views/Admin/_AdminSidebar.cshtml")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Order Details</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">Order - ORD-@Model.OrdId</h3>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Order Information</h6>
+                                <p><strong>Date:</strong> @(Model.OrdCreatedDate?.ToString("dd/MM/yyyy") ?? "N/A")</p>
+                                <p><strong>Total:</strong> SAR @Model.OrdTotalPrice.ToString("N2")</p>
+                                <p><strong>Status:</strong> @Model.OrdStatus</p>
+                                <p><strong>Customer:</strong> @(Model.Customer != null ? $"{Model.Customer.UserFname} {Model.Customer.UserLname}" : "Unknown")</p>
+                                <p><strong>Notes:</strong> @(string.IsNullOrEmpty(Model.OrdNotes) ? "None" : Model.OrdNotes)</p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6>Order Items</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Equipment Name</th>
+                                                <th>Quantity</th>
+                                                <th>Unit Price</th>
+                                                <th>Subtotal</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.Orderequipments != null && Model.Orderequipments.Any())
+                                            {
+                                                @foreach (var item in Model.Orderequipments)
+                                                {
+                                                    <tr>
+                                                        <td>@(item.Equ?.EquName ?? "N/A")</td>
+                                                        <td>@item.OrdEqQuantity</td>
+                                                        <td>SAR @item.OrdEqUnitPrice.ToString("N2")</td>
+                                                        <td>SAR @item.OrdEqSubTotal.ToString("N2")</td>
+                                                        <td>@(item.OrdEqStartDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                                        <td>@(item.OrdEqEndDate?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No items found.</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="@Url.Action("Orders", "Admin")" class="btn btn-outline-primary mt-4">Back to Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

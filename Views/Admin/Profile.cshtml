@@ -1,0 +1,186 @@
+﻿@model EquipLink.ViewModels.AdminVMs.UpdateProfileViewModel
+
+@{
+    ViewData["Title"] = "Manage Profile";
+}
+
+<style>
+    .input-validation-error {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .field-validation-error {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @await Html.PartialAsync("_AdminSidebar")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Manage Profile</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Please correct the following errors:</strong>
+                        <ul class="mb-0 mt-2">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">
+                            <i class="fas fa-user-edit me-2"></i>
+                            Profile Details
+                        </h3>
+
+                        <form asp-action="Profile" method="post" novalidate>
+                            @* <form asp-action="UpdateProfile" method="post" novalidate> *@
+                            @Html.AntiForgeryToken()
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="UserFname" class="form-label">
+                                            <i class="fas fa-user me-1"></i>
+                                            First Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="UserFname" class="form-control" placeholder="Enter your first name" />
+                                        <span asp-validation-for="UserFname" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="UserLname" class="form-label">
+                                            <i class="fas fa-user me-1"></i>
+                                            Last Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="UserLname" class="form-control" placeholder="Enter your last name" />
+                                        <span asp-validation-for="UserLname" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="UserEmail" class="form-label">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            Email Address <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="UserEmail" type="email" class="form-control" placeholder="Enter your email address" />
+                                        <span asp-validation-for="UserEmail" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="UserPhone" class="form-label">
+                                            <i class="fas fa-phone me-1"></i>
+                                            Phone Number
+                                        </label>
+                                        <input asp-for="UserPhone" type="tel" class="form-control" placeholder="Enter your phone number" />
+                                        <span asp-validation-for="UserPhone" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-lock me-2"></i>
+                                Change Password
+                            </h5>
+                            <p class="text-muted small mb-3">Leave password fields blank if you don't want to change your password.</p>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="UserPassword" class="form-label">
+                                            <i class="fas fa-key me-1"></i>
+                                            New Password
+                                        </label>
+                                        <input asp-for="UserPassword" type="password" class="form-control" placeholder="Enter new password (min. 6 characters)" />
+                                        <span asp-validation-for="UserPassword" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label asp-for="UserPasswordConfirmation" class="form-label">
+                                            <i class="fas fa-key me-1"></i>
+                                            Confirm New Password
+                                        </label>
+                                        <input asp-for="UserPasswordConfirmation" type="password" class="form-control" placeholder="Confirm your new password" />
+                                        <span asp-validation-for="UserPasswordConfirmation" class="field-validation-error"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <div>
+                                    <button type="submit" class="btn btn-primary btn-lg me-2">
+                                        <i class="fas fa-save me-2"></i>
+                                        Save Changes
+                                    </button>
+                                    <a asp-action="Dashboard" class="btn btn-outline-secondary btn-lg">
+                                        <i class="fas fa-times me-2"></i>
+                                        Cancel
+                                    </a>
+                                </div>
+                                <small class="text-muted">
+                                    <span class="text-danger">*</span> Required fields
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Enhanced form validation feedback
+        $(document).ready(function() {
+            $('form').on('submit', function() {
+                $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
+            });
+        });
+    </script>
+}

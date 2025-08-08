@@ -1,0 +1,55 @@
+﻿@model EquipLink.Models.Review
+
+@{
+    ViewData["Title"] = "Review Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @await Html.PartialAsync("~/Views/Admin/_AdminSidebar.cshtml")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Review Details</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">Review - REV-@Model.RevId</h3>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Review Information</h6>
+                                <p><strong>Customer:</strong> @($"{Model.Customer?.UserFname} {Model.Customer?.UserLname}" ?? "Unknown")</p>
+                                <p><strong>Provider:</strong> @($"{Model.Provider?.UserFname} {Model.Provider?.UserLname}" ?? "Unknown")</p>
+                                <p><strong>Rating:</strong> @Model.RevRatingValue / 5</p>
+                                <p><strong>Date:</strong> @Model.RevDate.ToString("yyyy-MM-dd")</p>
+                                <p><strong>Verified:</strong> @(Model.RevIsVerified == 1 ? "Yes" : "No")</p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6>Order Details</h6>
+                                <p><strong>Order ID:</strong> @(Model.Ord != null ? $"ORD-{Model.Ord.OrdId}" : "N/A")</p>
+                                <p><strong>Total:</strong> SAR @(Model.Ord?.OrdTotalPrice.ToString("N2") ?? "0.00")</p>
+                                <p><strong>Status:</strong> @(Model.Ord?.OrdStatus ?? "N/A")</p>
+                                <p><strong>Comment:</strong> @(Model.RevComment ?? "No comment")</p>
+                            </div>
+                        </div>
+
+                        <a asp-action="Reviews" class="btn btn-outline-primary mt-4">Back to Reviews</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

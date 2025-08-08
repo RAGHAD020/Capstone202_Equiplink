@@ -1,0 +1,139 @@
+﻿@model IEnumerable<EquipLink.Models.Review>
+
+@{
+    ViewData["Title"] = "Manage Reviews";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @await Html.PartialAsync("~/Views/Admin/_AdminSidebar.cshtml")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Manage Reviews</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">Review List</h3>
+
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="reviewSearch" placeholder="Search by customer, provider, or rating..." aria-label="Search reviews">
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Review ID</th>
+                                        <th>Customer</th>
+                                        <th>Provider</th>
+                                        <th>Rating</th>
+                                        <th>Date</th>
+                                        <th>Verified</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewTableBody">
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var review in Model)
+                                        {
+                                            <tr>
+                                                <td>REV-@review.RevId</td>
+                                                <td>@($"{review.Customer?.UserFname} {review.Customer?.UserLname}" ?? "Unknown")</td>
+                                                <td>@($"{review.Provider?.UserFname} {review.Provider?.UserLname}" ?? "Unknown")</td>
+                                                <td>@review.RevRatingValue / 5</td>
+                                                <td>@review.RevDate.ToString("yyyy-MM-dd")</td>
+                                                <td>@(review.RevIsVerified == 1 ? "Yes" : "No")</td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <form asp-action="ToggleReviewVerification" asp-route-reviewId="@review.RevId" method="post" style="display:inline;">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-sm @(review.RevIsVerified == 1 ? "btn-warning" : "btn-success")"
+                                                                    onclick="return confirm('Are you sure you want to @(review.RevIsVerified == 1 ? "unverify" : "verify") this review?');">
+                                                                @(review.RevIsVerified == 1 ? "Unverify" : "Verify")
+                                                            </button>
+                                                        </form>
+
+                                                        <form asp-action="DeleteReview" asp-route-reviewId="@review.RevId" method="post" style="display:inline;" class="ms-2">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                                    onclick="return confirm('Are you sure you want to delete this review?');">
+                                                                <i class="fas fa-trash"></i> Delete
+                                                            </button>
+                                                        </form>
+
+                                                        <a asp-action="ShowReview" asp-route-reviewId="@review.RevId" class="btn btn-sm btn-primary ms-2">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center">No reviews found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.getElementById('reviewSearch').addEventListener('input', function() {
+            let input = this.value.toLowerCase();
+            let tableRows = document.querySelectorAll('#reviewTableBody tr:not(.no-reviews-row)');
+
+            let visibleCount = 0;
+            tableRows.forEach(row => {
+                if (row.cells.length > 1) { // Skip "No reviews found" row
+                    let customer = row.cells[1].textContent.toLowerCase();
+                    let provider = row.cells[2].textContent.toLowerCase();
+                    let rating = row.cells[3].textContent.toLowerCase();
+
+                    if (customer.includes(input) || provider.includes(input) || rating.includes(input)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+
+            // Handle "No reviews found" message for search
+            let noReviewsRow = document.querySelector('#reviewTableBody tr[data-no-results]');
+            if (noReviewsRow) {
+                noReviewsRow.remove();
+            }
+
+            if (visibleCount === 0 && input && tableRows.length > 0) {
+                let tbody = document.getElementById('reviewTableBody');
+                let noResultsRow = document.createElement('tr');
+                noResultsRow.setAttribute('data-no-results', 'true');
+                noResultsRow.innerHTML = '<td colspan="7" class="text-center">No reviews match your search.</td>';
+                tbody.appendChild(noResultsRow);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,454 @@
+﻿@model EquipLink.Models.Order  
+@{
+    ViewData["Title"] = $"INVOICE ORD-{Model.OrdId} | EquipLink";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INVOICE ORD-@Model.OrdId | EquipLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #FAE996;
+            --accent: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 50px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .invoice-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .invoice-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .invoice-number {
+            font-size: 18px;
+            color: var(--dark);
+            margin-top: 5px;
+        }
+
+        .company-info {
+            margin-bottom: 30px;
+        }
+
+        .company-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .client-info {
+            background-color: var(--light);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            position: relative;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .client-info::before {
+            content: "BILL TO";
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: white;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .detail-card {
+            flex: 1;
+            padding: 20px;
+            background-color: var(--light);
+            border-radius: 8px;
+            margin: 0 10px;
+        }
+
+        .detail-card:first-child {
+            margin-left: 0;
+        }
+
+        .detail-card:last-child {
+            margin-right: 0;
+        }
+
+        .detail-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .table thead th {
+            background-color: #cacaca;
+            color: black;
+            font-weight: 500;
+            padding: 5px;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tbody tr:nth-child(even) {
+            background-color: var(--light);
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .total-section {
+            background-color: var(--light);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .total-row.grand-total {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid var(--secondary);
+        }
+
+        .payment-info {
+            background-color: var(--light);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .payment-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .payment-title i {
+            margin-right: 10px;
+            color: var(--secondary);
+        }
+
+        .terms {
+            margin-bottom: 30px;
+        }
+
+        .terms-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .terms-list {
+            padding-left: 20px;
+        }
+
+        .terms-list li {
+            margin-bottom: 8px;
+        }
+
+        .signature-area {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .signature-box {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-line {
+            height: 1px;
+            background-color: #ccc;
+            margin: 40px 0 10px;
+            position: relative;
+        }
+
+        .signature-line::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 20px;
+            border-top: 1px solid #ccc;
+        }
+
+        .thank-you {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 8px;
+        }
+
+        .thank-you h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @@media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+
+            .invoice-container {
+                box-shadow: none;
+                border: none;
+                padding: 30px;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <div class="invoice-header">
+            <div>
+                <h1 class="invoice-title">INVOICE</h1>
+                <p class="invoice-number">ORD-@Model.OrdId</p>
+            </div>
+            <div>
+                <img src="/images/logo.png" alt="EquipLink" style="height: 60px;">
+                <p style="text-align: right; margin-top: 10px; color: var(--dark);">
+                    <small>Issued: @DateTime.Now.ToString("MMMM d, yyyy")</small>
+                </p>
+            </div>
+        </div>
+
+        <div class="company-info">
+            <p class="company-name">EquipLink</p>
+            <p>123 Business District, jubail</p>
+            <p>Saudi Arabia</p>
+            <p><i class="fas fa-phone me-2"></i> +966 12 345 6789</p>
+            <p><i class="fas fa-envelope me-2"></i> accounting@equiplink.com</p>
+        </div>
+
+        <div class="client-info">
+            <h5 style="font-weight: 600; margin-bottom: 15px;">@Model.Customer.UserFname @Model.Customer.UserLname</h5>
+            <p><i class="fas fa-map-marker-alt me-2"></i> @(Model.Deliveries.FirstOrDefault()?.DeliverAt ?? "Address not specified")</p>
+            <p><i class="fas fa-phone me-2"></i> @(Model.Customer.UserPhone ?? "N/A")</p>
+            <p><i class="fas fa-envelope me-2"></i> @(Model.Customer.UserEmail ?? "N/A")</p>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Description</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Orderequipments)
+                {
+                    <tr>
+                        <td>
+                            <strong>@(item.Equ?.EquName ?? "N/A")</strong>
+                        <td>
+                            <strong>@(item.Equ != null ? item.Equ.EquName : "N/A")</strong>
+                            <div style="font-size: 13px; color: #666;">SKU: @(item.Equ != null ? item.Equ.EquId.ToString() : "N/A")</div>
+                        </td>
+                        </td>
+                        <td>
+                            @(item.Equ?.EquType == "rent" ? "Equipment Rental" : "Equipment Purchase")
+                            @if (item.Equ?.EquType == "rent")
+                            {
+                                <div style="font-size: 13px; margin-top: 5px;">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    @item.OrdEqStartDate?.ToString("yyyy-MM-dd") to @item.OrdEqEndDate?.ToString("yyyy-MM-dd")
+                                </div>
+                            }
+                        </td>
+                        <td class="text-right">SAR @item.OrdEqUnitPrice.ToString("F2")</td>
+                        <td class="text-right">SAR @item.OrdEqSubTotal.ToString("F2")</td>
+                    </tr>
+                }
+
+                @if (Model.Deliveries.Any())
+                {
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Delivery Service</strong></td>
+                        <td class="text-right">SAR @Model.Deliveries.First().DeliverFee?.ToString("F2")</td>
+                    </tr>
+                }
+
+                @if (Model.OrdInstallationOperation == 1)
+                {
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Professional Installation</strong></td>
+                        <td class="text-right">SAR 300.00</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <div class="total-row">
+                <span>Subtotal:</span>
+                <span>SAR @Model.OrdTotalPrice.ToString("F2")</span>
+            </div>
+
+            @if (Model.Deliveries.Any())
+            {
+                <div class="total-row">
+                    <span>Delivery Fee:</span>
+                    <span>SAR @Model.Deliveries.First().DeliverFee?.ToString("F2")</span>
+                </div>
+            }
+
+            @if (Model.OrdInstallationOperation == 1)
+            {
+                <div class="total-row">
+                    <span>Installation Fee:</span>
+                    <span>SAR 300.00</span>
+                </div>
+            }
+
+            @{
+                var totalAmount = Model.OrdTotalPrice +
+                (Model.Deliveries.FirstOrDefault()?.DeliverFee ?? 0) +
+                (Model.OrdInstallationOperation == 1 ? 300 : 0);
+            }
+            <div class="total-row grand-total">
+                <span>TOTAL AMOUNT DUE (Including Tax):</span>
+                <span>SAR @totalAmount.ToString("F2")</span>
+            </div>
+        </div>
+
+        <div class="thank-you">
+            <h3>Thank You For Your Business!</h3>
+            <p>We appreciate your trust in our services. Please don't hesitate to contact us if you have any questions about this invoice.</p>
+            <div style="margin-top: 15px;">
+                <i class="fas fa-phone me-2"></i> +966 12 345 6789 &nbsp; | &nbsp;
+                <i class="fas fa-envelope me-2"></i> support@equiplink.com &nbsp; | &nbsp;
+                <i class="fas fa-globe me-2"></i> www.equiplink.com
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Uncomment if you want automatic printing
+        // window.onload = function() {
+        //     setTimeout(function() {
+        //         window.print();
+        //         window.close();
+        //     }, 500);
+        // };
+    </script>
+</body>
+</html>

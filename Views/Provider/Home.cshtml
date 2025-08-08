@@ -1,0 +1,225 @@
+﻿@{
+    ViewData["Title"] = "Provider Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Dashboard Section -->
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @await Html.PartialAsync("_ProviderSidebar")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-5">Provider Dashboard</h1>
+
+                <!-- Metrics -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-3">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-tools mb-2"></i>
+                            <h5 class="fw-bold">Total Equipment</h5>
+                            <p class="display-6">@Model.TotalEquipment</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-shopping-cart mb-2"></i>
+                            <h5 class="fw-bold">Active Orders</h5>
+                            <p class="display-6">@Model.ActiveOrders</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-wrench mb-2"></i>
+                            <h5 class="fw-bold">Maintenance</h5>
+                            <p class="display-6">@Model.MaintenanceRequests</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card metric-card dashboard-card p-3">
+                            <i class="fas fa-star mb-2"></i>
+                            <h5 class="fw-bold">Average Rating</h5>
+                            <p class="display-6">@Model.AverageRating.ToString("F1")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-12">
+                        <div class="chart-container dashboard-card">
+                            <h5 class="fw-bold mb-3">Order Trends (Last 6 Months)</h5>
+                            <div id="orderChart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card dashboard-card mb-4">
+                            <div class="card-body">
+                                <h3 class="fw-bold mb-4">Recent Orders</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Customer</th>
+                                                <th>Date</th>
+                                                <th>Total</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.RecentOrders != null && Model.RecentOrders.Count > 0)
+                                            {
+                                                @foreach (var order in Model.RecentOrders)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <a href="@Url.Action("OrdersShow", "Provider", new { orderId = order.OrdId })" class="text-decoration-none">
+                                                                ORD-@order.OrdId
+                                                            </a>
+                                                        </td>
+                                                        <td>
+                                                            @if (order.Customer != null)
+                                                            {
+                                                                @($"{order.Customer.UserFname} {order.Customer.UserLname}")
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">Unknown</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            @if (order.OrdCreatedDate != null)
+                                                            {
+                                                                @order.OrdCreatedDate.ToString("dd/MM/yyyy")
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">N/A</span>
+                                                            }
+                                                        </td>
+                                                        <td>SAR @order.OrdTotalPrice?.ToString("N2")</td>
+                                                        <td>
+                                                            <span class="badge bg-@(GetStatusBadgeClass(order.OrdStatus))">
+                                                                @order.OrdStatus
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <a href="@Url.Action("OrdersShow", "Provider", new { orderId = order.OrdId })"
+                                                               class="btn btn-sm btn-outline-primary action-btn">
+                                                                <i class="fas fa-eye"></i> View
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="6" class="text-center text-muted">No recent orders found.</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="chart-container dashboard-card">
+                            <h5 class="fw-bold mb-3">Equipment Availability</h5>
+                            <div id="availabilityChart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.41.0/dist/apexcharts.min.js"></script>
+    <script>
+        // Order Trends Chart
+        var orderOptions = {
+            chart: {
+                type: 'line',
+                height: 300,
+                toolbar: { show: false }
+            },
+            series: [{
+                name: 'Orders',
+                data: @Html.Raw(Json.Serialize(Model.OrderTrends))
+            }],
+            xaxis: {
+                categories: ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month']
+            },
+            colors: ['#0d6efd'],
+            stroke: { curve: 'smooth', width: 3 },
+            tooltip: {
+                theme: 'light'
+            },
+            grid: {
+                borderColor: '#e7e7e7',
+                row: {
+                    colors: ['#f3f3f3', 'transparent'],
+                    opacity: 0.5
+                }
+            }
+        };
+        var orderChart = new ApexCharts(document.querySelector("#orderChart"), orderOptions);
+        orderChart.render();
+
+        // Equipment Availability Chart
+        var availabilityOptions = {
+            chart: {
+                type: 'pie',
+                height: 300
+            },
+            series: @Html.Raw(Json.Serialize(Model.EquipmentAvailability)),
+            labels: ['Available', 'Rented', 'Maintenance', 'Unavailable'],
+            colors: ['#28a745', '#0d6efd', '#ffc107', '#dc3545'],
+            legend: {
+                position: 'bottom'
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: { height: 250 },
+                    legend: { position: 'bottom' }
+                }
+            }],
+            tooltip: {
+                y: {
+                    formatter: function(val) {
+                        return val + " equipment"
+                    }
+                }
+            }
+        };
+        var availabilityChart = new ApexCharts(document.querySelector("#availabilityChart"), availabilityOptions);
+        availabilityChart.render();
+    </script>
+}
+
+@functions {
+    private string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "pending" => "warning",
+            "processing" => "info",
+            "shipped" => "primary",
+            "delivered" => "success",
+            "cancelled" => "danger",
+            _ => "secondary"
+        };
+    }
+}

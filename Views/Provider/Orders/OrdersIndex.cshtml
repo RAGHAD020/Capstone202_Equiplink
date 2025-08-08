@@ -1,0 +1,242 @@
+﻿@model IEnumerable<EquipLink.Models.Order>
+
+@{
+    ViewData["Title"] = "Manage Orders";
+    // Convert to list to avoid multiple enumeration
+    var ordersList = Model?.ToList() ?? new List<Order>();
+}
+
+<section class="py-5">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            <partial name="~/Views/Provider/_ProviderSidebar.cshtml" />
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Manage Orders</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <!-- Orders Table -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="fw-bold">Orders List</h3>
+                            <input type="text" class="form-control me-2" id="searchOrders"
+                                   placeholder="Search orders..." style="max-width: 200px;">
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Date</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                @* <tbody id="ordersTableBody">
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var order in Model)
+                                        {
+                                            <tr>
+                                                <td>ORD-@order.OrdId</td>
+                                                <td>@(order.Customer?.UserFname ?? "Unknown") @(order.Customer?.UserLname ?? "")</td>
+                                                <td>@(order.OrdCreatedDate.HasValue ? order.OrdCreatedDate.Value.ToString("yyyy-MM-dd") : "N/A")</td>
+                                                <td>SAR @order.OrdTotalPrice.ToString("F2")</td>
+                                                <td>
+                                                    <span class="badge bg-@GetStatusBadgeColor(order.OrdStatus)">
+                                                        @order.OrdStatus
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="@Url.Action("OrdersShow", "Provider", new { orderId = order.OrdId })"
+                                                       class="btn btn-sm btn-outline-primary action-btn">View Details</a>
+                                                    <button class="btn btn-sm btn-outline-info action-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#updateStatusModal@order.OrdId">
+                                                        Update Status
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center">No orders found.</td>
+                                        </tr>
+                                    }
+                                </tbody> *@
+                                <tbody id="ordersTableBody">
+                                    @if (ordersList.Any())
+                                    {
+                                        @for (int i = 0; i < ordersList.Count; i++)
+                                        {
+                                            var order = ordersList[i];
+                                            <tr>
+                                                <td>ORD-@order.OrdId</td>
+                                                <td>@(order.Customer?.UserFname ?? "Unknown") @(order.Customer?.UserLname ?? "")</td>
+                                                <td>@(order.OrdCreatedDate.HasValue ? order.OrdCreatedDate.Value.ToString("yyyy-MM-dd") : "N/A")</td>
+                                                <td>SAR @order.OrdTotalPrice.ToString("F2")</td>
+                                                <td>
+                                                    <span class="badge bg-@GetStatusBadgeColor(order.OrdStatus)">
+                                                        @order.OrdStatus
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="@Url.Action("OrdersShow", "Provider", new { orderId = order.OrdId })"
+                                                       class="btn btn-sm btn-outline-primary action-btn">View Details</a>
+                                                    <button class="btn btn-sm btn-outline-info action-btn"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#updateStatusModal_@i">
+                                                        Update Status
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center">No orders found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Update Status Modals -->
+@* @if (Model != null && Model.Any())
+{
+    @foreach (var order in Model)
+    {
+        <!-- Update Status Modal -->
+        <div class="modal fade" id="updateStatusModal@order.OrdId" tabindex="-1"
+             aria-labelledby="updateStatusModalLabel@order.OrdId" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateStatusModalLabel@order.OrdId">
+                            Update Status - ORD-@order.OrdId
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="@Url.Action("OrderUpdateStatus", "Provider")" method="POST">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@order.OrdId" />
+                            <div class="mb-3">
+                                <label for="status@order.OrdId" class="form-label fw-bold">Status</label>
+                                <select class="form-select" id="status@order.OrdId" name="status" required>
+                                    <option value="Pending" selected="@(order.OrdStatus == "Pending")">Pending</option>
+                                    <option value="Processing" selected="@(order.OrdStatus == "Processing")">Processing</option>
+                                    <option value="Shipped" selected="@(order.OrdStatus == "Shipped")">Shipped</option>
+                                    <option value="Delivered" selected="@(order.OrdStatus == "Delivered")">Delivered</option>
+                                    <option value="Cancelled" selected="@(order.OrdStatus == "Cancelled")">Cancelled</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Status</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+} *@
+
+@if (ordersList.Any())
+{
+    @for (int i = 0; i < ordersList.Count; i++)
+    {
+        var order = ordersList[i];
+        <!-- Update Status Modal -->
+        <div class="modal fade" id="updateStatusModal_@i" tabindex="-1"
+             aria-labelledby="updateStatusModalLabel_@i" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateStatusModalLabel_@i">
+                            Update Status - ORD-@order.OrdId
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="@Url.Action("OrderUpdateStatus", "Provider")" method="POST">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@order.OrdId" />
+                            <div class="mb-3">
+                                <label for="status_@i" class="form-label fw-bold">Status</label>
+                                <select class="form-select" id="status_@i" name="status" required>
+                                    <option value="Pending" selected="@(order.OrdStatus == "Pending")">Pending</option>
+                                    <option value="Processing" selected="@(order.OrdStatus == "Processing")">Processing</option>
+                                    <option value="Shipped" selected="@(order.OrdStatus == "Shipped")">Shipped</option>
+                                    <option value="Delivered" selected="@(order.OrdStatus == "Delivered")">Delivered</option>
+                                    <option value="Cancelled" selected="@(order.OrdStatus == "Cancelled")">Cancelled</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Status</button>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+@functions {
+    private string GetStatusBadgeColor(string status)
+    {
+        return status switch
+        {
+            "Pending" => "warning",
+            "Processing" => "info",
+            "Shipped" => "primary",
+            "Delivered" => "success",
+            "Cancelled" => "danger",
+            _ => "secondary"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('searchOrders').addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#ordersTableBody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
+}

@@ -1,0 +1,876 @@
+﻿@model EquipLink.ViewModels.CustomerVMs.CustomerProfileViewModel
+
+@{
+    ViewData["Title"] = "Customer Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="py-5 bg-light">
+    <div class="container profile-container">
+        <h1 class="fw-bold text-center mb-5">Customer Profile</h1>
+        <div class="card border-0 p-3 profile-card">
+            <div class="card-body">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewBag.ActiveTab == "profile" ? "active" : "")"
+                           id="profile-tab"
+                           data-bs-toggle="tab"
+                           href="#profile"
+                           role="tab">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewBag.ActiveTab == "orders" ? "active" : "")"
+                           id="orders-tab"
+                           data-bs-toggle="tab"
+                           href="#orders"
+                           role="tab">Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewBag.ActiveTab == "reviews" ? "active" : "")"
+                           id="reviews-tab"
+                           data-bs-toggle="tab"
+                           href="#reviews"
+                           role="tab">Reviews</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewBag.ActiveTab == "addresses" ? "active" : "")"
+                           id="addresses-tab"
+                           data-bs-toggle="tab"
+                           href="#addresses"
+                           role="tab">Addresses</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade @(ViewBag.ActiveTab == "profile" ? "show active" : "")"
+                         id="profile"
+                         role="tabpanel">
+                        @if (TempData["success"] != null)
+                        {
+                            <div class="alert alert-success">@TempData["success"]</div>
+                        }
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger">
+                                <ul>
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                        <h3 class="fw-bold mb-4">Profile Information</h3>
+
+                        <form id="profileForm" method="POST" asp-action="UpdateProfile">
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                            @Html.AntiForgeryToken()
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="UpdateProfile.UserFName" class="form-label fw-bold">First Name</label>
+                                    <input asp-for="UpdateProfile.UserFName" class="form-control" id="firstName" required>
+                                    <span asp-validation-for="UpdateProfile.UserFName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="UpdateProfile.UserLName" class="form-label fw-bold">Last Name</label>
+                                    <input asp-for="UpdateProfile.UserLName" class="form-control" id="lastName" required>
+                                    <span asp-validation-for="UpdateProfile.UserLName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="UpdateProfile.UserEmail" class="form-label fw-bold">Email</label>
+                                    <input asp-for="UpdateProfile.UserEmail" class="form-control" id="email" type="email" required>
+                                    <span asp-validation-for="UpdateProfile.UserEmail" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="UpdateProfile.UserNationalId" class="form-label fw-bold">National ID <span class="text-danger">*</span></label>
+                                    <input asp-for="UpdateProfile.UserNationalId" class="form-control"
+                                           maxlength="10" minlength="10" pattern="\d{10}" inputmode="numeric" required>
+                                    <span asp-validation-for="UpdateProfile.UserNationalId" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label asp-for="UpdateProfile.UserPassword" class="form-label fw-bold">Password (Optional)</label>
+                                    <input asp-for="UpdateProfile.UserPassword" class="form-control" id="password" type="password"
+                                           autocomplete="new-password" placeholder="Leave blank to keep current password">
+                                    <span asp-validation-for="UpdateProfile.UserPassword" class="text-danger d-none"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="UpdateProfile.UserPasswordConfirmation" class="form-label fw-bold">Confirm Password (Optional)</label>
+                                    <input asp-for="UpdateProfile.UserPasswordConfirmation" class="form-control" id="passwordConfirmation"
+                                           type="password" autocomplete="new-password" placeholder="Confirm new password">
+                                    <span asp-validation-for="UpdateProfile.UserPasswordConfirmation" class="text-danger d-none"></span>
+                                    <div id="passwordMismatchError" class="invalid-feedback d-none">Passwords don't match</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="UpdateProfile.UserPhone" class="form-label fw-bold">Phone</label>
+                                    <input asp-for="UpdateProfile.UserPhone" class="form-control" id="phone" type="tel">
+                                    <span asp-validation-for="UpdateProfile.UserPhone" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-12 mt-4">
+                                    <h4 class="fw-bold mb-3">Company Information</h4>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label asp-for="UpdateProfile.CoName" class="form-label fw-bold">Company Name</label>
+                                            <input asp-for="UpdateProfile.CoName" class="form-control" id="companyName">
+                                            <span asp-validation-for="UpdateProfile.CoName" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="UpdateProfile.CoEmail" class="form-label fw-bold">Company Email</label>
+                                            <input asp-for="UpdateProfile.CoEmail" class="form-control" id="companyEmail" type="email">
+                                            <span asp-validation-for="UpdateProfile.CoEmail" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="UpdateProfile.CoPhone" class="form-label fw-bold">Company Phone</label>
+                                            <input asp-for="UpdateProfile.CoPhone" class="form-control" id="companyPhone" type="tel">
+                                            <span asp-validation-for="UpdateProfile.CoPhone" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="UpdateProfile.CoTaxNumber" class="form-label fw-bold">Tax Number <span class="text-danger">*</span></label>
+                                            <input asp-for="UpdateProfile.CoTaxNumber" class="form-control"
+                                                   maxlength="10" minlength="10" pattern="\d{10}" inputmode="numeric">
+                                            <span asp-validation-for="UpdateProfile.CoTaxNumber" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-primary action-btn">Update Profile</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Orders Tab -->
+                    <div class="tab-pane fade @(ViewBag.ActiveTab == "orders" ? "show active" : "")"
+                         id="orders"
+                         role="tabpanel">
+                        <h3 class="fw-bold mb-4">Your Orders</h3>
+
+                        @if (TempData["success"] != null)
+                        {
+                            <div class="alert alert-success">@TempData["success"]</div>
+                        }
+
+                        <div class="table-responsive">
+                            @await Html.PartialAsync("_OrdersTablePartial", Model)
+                        </div>
+                    </div>
+
+                    <!-- Reviews Tab -->
+                    <div class="tab-pane fade @(ViewBag.ActiveTab == "reviews" ? "show active" : "")"
+                         id="reviews"
+                         role="tabpanel">
+                        <h3 class="fw-bold mb-4">Your Reviews</h3>
+
+                        @if (TempData["success"] != null)
+                        {
+                            <div class="alert alert-success">@TempData["success"]</div>
+                        }
+
+                        @if (Model.Reviews.Any())
+                        {
+                            @foreach (var review in Model.Reviews)
+                            {
+                                <div class="section-card mb-3 p-3 border rounded">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="fw-bold">@(review.Ord?.Orderequipments?.FirstOrDefault()?.Equ?.EquName ?? "Unknown Equipment")</h5>
+                                            <p class="text-muted small mb-1">Posted on: @review.RevDate.ToString("dd/MM/yyyy")</p>
+                                            <p class="mb-1">
+                                                Rating:
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    @if (i <= review.RevRatingValue)
+                                                    {
+                                                        <i class="bi bi-star-fill text-warning"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-star text-warning"></i>
+                                                    }
+                                                }
+                                            </p>
+                                            <p>@review.RevComment</p>
+                                        </div>
+                                        <div>
+                                            <form asp-action="DeleteReview" asp-route-reviewId="@review.RevId"
+                                                  method="POST"
+                                                  onsubmit="return confirm('Are you sure you want to delete this review?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger action-btn">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-muted">No reviews yet.</p>
+                        }
+                    </div>
+
+                    <!-- Addresses Tab -->
+                    <div class="tab-pane fade @(ViewBag.ActiveTab == "addresses" ? "show active" : "")"
+                         id="addresses"
+                         role="tabpanel">
+                        <h3 class="fw-bold mb-4">Your Addresses</h3>
+
+                        @if (TempData["success"] != null)
+                        {
+                            <div class="alert alert-success">@TempData["success"]</div>
+                        }
+                        @if (TempData["error"] != null)
+                        {
+                            <div class="alert alert-danger">@TempData["error"]</div>
+                        }
+
+                        <div class="row">
+                            @if (Model.Addresses.Any())
+                            {
+                                @foreach (var address in Model.Addresses)
+                                {
+                                    <div class="card col-md-12 shadow-sm mb-4 border-0">
+                                        <div class="card-body w-100 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">
+                                                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                                    @address.AddStreet
+                                                    @if (address.AddIsDefault == 1)
+                                                    {
+                                                        <span class="badge bg-success ms-2">Default</span>
+                                                    }
+                                                </h6>
+                                                <p class="mb-0 text-muted small">
+                                                    @address.AddCity,
+                                                    @if (!string.IsNullOrEmpty(address.AddState))
+                                                    {
+                                                        @address.AddState
+                                                        <text>,</text>
+                                                    }
+                                                    @address.AddCountry -
+                                                    @address.AddPostalCode
+                                                </p>
+                                            </div>
+                                            <div class="text-end">
+                                                <button class="btn btn-sm btn-outline-primary me-2"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#addressModal"
+                                                        data-address-id="@address.AddId"
+                                                        data-street="@address.AddStreet"
+                                                        data-city="@address.AddCity"
+                                                        data-state="@address.AddState"
+                                                        data-postal-code="@address.AddPostalCode"
+                                                        data-country="@address.AddCountry"
+                                                        data-is-default="@address.AddIsDefault">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+
+                                                <form asp-action="DeleteAddress" asp-route-addressId="@address.AddId"
+                                                      method="POST"
+                                                      class="d-inline"
+                                                      onsubmit="return confirmDeleteAddress(this);">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">No addresses found.</div>
+                            }
+                        </div>
+
+                        <!-- Add New Address Form -->
+                        <h5 class="fw-bold mt-4 mb-3">Add New Address</h5>
+                        <form id="addressForm" method="POST" asp-action="AddAddress">
+                            @Html.AntiForgeryToken()
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label asp-for="AddAddress.Street" class="form-label fw-bold">Street*</label>
+                                    <input asp-for="AddAddress.Street" class="form-control" required>
+                                    <span asp-validation-for="AddAddress.Street" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="AddAddress.City" class="form-label fw-bold">City*</label>
+                                    <input asp-for="AddAddress.City" class="form-control" required>
+                                    <span asp-validation-for="AddAddress.City" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="AddAddress.State" class="form-label fw-bold">State</label>
+                                    <input asp-for="AddAddress.State" class="form-control">
+                                    <span asp-validation-for="AddAddress.State" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-2">
+                                    <label asp-for="AddAddress.PostalCode" class="form-label fw-bold">Postal Code</label>
+                                    <input asp-for="AddAddress.PostalCode" class="form-control">
+                                    <span asp-validation-for="AddAddress.PostalCode" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="AddAddress.Country" class="form-label fw-bold">Country</label>
+                                    <input asp-for="AddAddress.Country" class="form-control" value="Saudi Arabia" readonly>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input type="hidden" asp-for="AddAddress.IsDefault" value="0" />
+                                        <input asp-for="AddAddress.IsDefault" class="form-check-input" type="checkbox" value="1">
+                                        <label asp-for="AddAddress.IsDefault" class="form-check-label">Set as default address</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary action-btn">Save Address</button>
+                                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="resetAddressForm()">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include all order-related modals -->
+    @await Html.PartialAsync("_OrdersModalsPartial", Model)
+
+    <!-- Address Modal -->
+    <div class="modal fade" id="addressModal" tabindex="-1" aria-labelledby="addressModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addressModalLabel">Edit Address</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editAddressForm" method="POST" asp-action="UpdateAddress">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="addressId" id="editAddressId">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="UpdateAddress.Street" class="form-label fw-bold">Street*</label>
+                                <input asp-for="UpdateAddress.Street" class="form-control" id="editStreet" required>
+                                <span asp-validation-for="UpdateAddress.Street" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="UpdateAddress.City" class="form-label fw-bold">City*</label>
+                                <input asp-for="UpdateAddress.City" class="form-control" id="editCity" required>
+                                <span asp-validation-for="UpdateAddress.City" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="UpdateAddress.State" class="form-label fw-bold">State</label>
+                                <input asp-for="UpdateAddress.State" class="form-control" id="editState">
+                                <span asp-validation-for="UpdateAddress.State" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="UpdateAddress.PostalCode" class="form-label fw-bold">Postal Code</label>
+                                <input asp-for="UpdateAddress.PostalCode" class="form-control" id="editPostalCode">
+                                <span asp-validation-for="UpdateAddress.PostalCode" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="UpdateAddress.Country" class="form-label fw-bold">Country</label>
+                                <input asp-for="UpdateAddress.Country" class="form-control" id="editCountry" value="Saudi Arabia" readonly>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input asp-for="UpdateAddress.IsDefault" class="form-check-input" type="checkbox" id="editIsDefault">
+                                    <label asp-for="UpdateAddress.IsDefault" class="form-check-label">Set as default address</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary action-btn">Save Changes</button>
+                                <button type="button" class="btn btn-outline-secondary ms-2" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Modal -->
+    <div class="modal fade" id="maintenanceModal" tabindex="-1" aria-labelledby="maintenanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="maintenanceModalLabel">Request Maintenance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="maintenanceForm" method="POST" asp-action="RequestMaintenance">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="orderId" id="maintenanceOrderId">
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-bold">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Toastr notifications
+        @{
+            if (TempData["toastr-success"] != null)
+            {
+                @:toastr.success('@Html.Raw(TempData["toastr-success"])');
+            }
+            if (TempData["toastr-error"] != null)
+            {
+                @:toastr.error('@Html.Raw(TempData["toastr-error"])');
+            }
+            if (TempData["toastr-warning"] != null)
+            {
+                @:toastr.warning('@Html.Raw(TempData["toastr-warning"])');
+            }
+        }
+
+        // SweetAlert for delete confirmation
+        function confirmDeleteAddress(form) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const deleteButton = form.querySelector('button[type="submit"]');
+                    if (deleteButton) {
+                        const originalText = deleteButton.innerHTML;
+                        deleteButton.disabled = true;
+                        deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+                    }
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
+        // Enhanced Address Modal Handling
+        function initializeAddressModal() {
+            const addressModal = document.getElementById('addressModal');
+            if (addressModal) {
+                addressModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const addressId = button.getAttribute('data-address-id');
+                    const street = button.getAttribute('data-street') || '';
+                    const city = button.getAttribute('data-city') || '';
+                    const state = button.getAttribute('data-state') || '';
+                    const postalCode = button.getAttribute('data-postal-code') || '';
+                    const country = button.getAttribute('data-country') || 'Saudi Arabia';
+                    const isDefault = button.getAttribute('data-is-default') === '1';
+
+                    document.getElementById('editAddressId').value = addressId;
+                    document.getElementById('editStreet').value = street;
+                    document.getElementById('editCity').value = city;
+                    document.getElementById('editState').value = state;
+                    document.getElementById('editPostalCode').value = postalCode;
+                    document.getElementById('editCountry').value = country;
+                    document.getElementById('editIsDefault').checked = isDefault;
+
+                    const form = document.getElementById('editAddressForm');
+                    if (form) {
+                        form.querySelectorAll('.is-invalid').forEach(el => {
+                            el.classList.remove('is-invalid');
+                        });
+                    }
+                });
+            }
+        }
+
+        // Enhanced Reset Address Form
+        function resetAddressForm() {
+            const form = document.getElementById('addressForm');
+            if (form) {
+                form.reset();
+                const countryInput = form.querySelector('input[name="AddAddress.Country"]');
+                if (countryInput) {
+                    countryInput.value = 'Saudi Arabia';
+                }
+                form.querySelectorAll('.form-control').forEach(function(input) {
+                    input.classList.remove('is-valid', 'is-invalid');
+                });
+                const defaultCheckbox = form.querySelector('input[name="AddAddress.IsDefault"]');
+                if (defaultCheckbox) {
+                    defaultCheckbox.checked = false;
+                }
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeAddressModal();
+
+            // National ID and Tax Number validation
+            const nationalIdInput = document.getElementById('UpdateProfile_UserNationalId');
+            const taxNumberInput = document.getElementById('UpdateProfile_CoTaxNumber');
+
+            function validateNumericInput(input) {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                        if (this.value.length > 10) {
+                            this.value = this.value.slice(0, 10);
+                        }
+                    });
+                }
+            }
+
+            validateNumericInput(nationalIdInput);
+            validateNumericInput(taxNumberInput);
+
+            const passwordInput = document.getElementById('password');
+            const passwordConfirmInput = document.getElementById('passwordConfirmation');
+            const passwordMismatchError = document.getElementById('passwordMismatchError');
+
+            function validatePasswords() {
+                if (!passwordInput || !passwordConfirmInput) return true;
+
+                const password = passwordInput.value;
+                const confirmPassword = passwordConfirmInput.value;
+
+                if ((password || confirmPassword) && password !== confirmPassword) {
+                    passwordConfirmInput.setCustomValidity('Passwords do not match');
+                    passwordConfirmInput.classList.add('is-invalid');
+                    passwordMismatchError.classList.remove('d-none');
+                    return false;
+                } else {
+                    passwordConfirmInput.setCustomValidity('');
+                    passwordConfirmInput.classList.remove('is-invalid');
+                    passwordMismatchError.classList.add('d-none');
+                    return true;
+                }
+            }
+
+            if (passwordInput && passwordConfirmInput) {
+                passwordInput.addEventListener('blur', validatePasswords);
+                passwordConfirmInput.addEventListener('blur', validatePasswords);
+                passwordConfirmInput.addEventListener('input', function() {
+                    if (passwordInput.value && this.value) {
+                        validatePasswords();
+                    }
+                });
+            }
+
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    if (!validatePasswords()) {
+                        e.preventDefault();
+                        passwordConfirmInput.focus();
+                        return false;
+                    }
+
+                    const submitButton = profileForm.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        const originalText = submitButton.innerHTML;
+                        submitButton.disabled = true;
+                        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+
+                        setTimeout(function() {
+                            if (submitButton.disabled) {
+                                submitButton.disabled = false;
+                                submitButton.innerHTML = originalText;
+                            }
+                        }, 10000);
+                    }
+                });
+            }
+
+            const emailInputs = document.querySelectorAll('input[type="email"]');
+            emailInputs.forEach(function(input) {
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        const emailRegex = /^@@[^\s@@]+@@[^\s@@]+\.@@[^\s@@]+$/;
+                        const isValid = emailRegex.test(this.value);
+                        this.classList.toggle('is-invalid', !isValid);
+                        this.classList.toggle('is-valid', isValid);
+                    } else {
+                        this.classList.remove('is-valid', 'is-invalid');
+                    }
+                });
+            });
+
+            const phoneInputs = document.querySelectorAll('input[type="tel"]');
+            phoneInputs.forEach(function(input) {
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        const phoneRegex = /^\+?[0-9\s\-\(\)]+$/;
+                        const isValid = phoneRegex.test(this.value) &&
+                                      this.value.replace(/\D/g, '').length >= 8;
+                        this.classList.toggle('is-invalid', !isValid);
+                        this.classList.toggle('is-valid', isValid);
+                    } else {
+                        this.classList.remove('is-valid', 'is-invalid');
+                    }
+                });
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab) {
+                const tabElement = document.getElementById(tab + '-tab');
+                if (tabElement) {
+                    new bootstrap.Tab(tabElement).show();
+                }
+            }
+
+            const maintenanceModal = document.getElementById('maintenanceModal');
+            if (maintenanceModal) {
+                maintenanceModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const orderId = button.getAttribute('data-order-id');
+                    document.getElementById('maintenanceOrderId').value = orderId;
+                });
+            }
+
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                if (alert.classList.contains('alert-success') ||
+                    alert.classList.contains('alert-danger')) {
+                    setTimeout(function() {
+                        alert.style.transition = 'opacity 0.5s ease-out';
+                        alert.style.opacity = '0';
+                        setTimeout(function() {
+                            alert.remove();
+                        }, 500);
+                    }, 5000);
+                }
+            });
+
+            const addressForm = document.getElementById('addressForm');
+            if (addressForm) {
+                addressForm.addEventListener('submit', function(e) {
+                    const requiredFields = addressForm.querySelectorAll('[required]');
+                    let isValid = true;
+
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            field.classList.remove('is-invalid');
+                        }
+                    });
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        const firstInvalid = addressForm.querySelector('.is-invalid');
+                        if (firstInvalid) {
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <style>
+        /* Professional Customer Profile Tabs */
+        .profile-container .nav-tabs {
+            border: none;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+            .profile-container .nav-tabs .nav-item {
+                margin: 0 2px;
+                flex: 1;
+            }
+
+            .profile-container .nav-tabs .nav-link {
+                border: none;
+                border-radius: 8px;
+                padding: 30px 20px;
+                font-weight: 800;
+                font-size: 18px;
+                text-align: center;
+                color: #6c757d;
+                background-color: transparent;
+                transition: all 0.3s ease;
+                position: relative;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 50px;
+            }
+
+                .profile-container .nav-tabs .nav-link:hover {
+                    color: #495057;
+                    background-color: rgba(255, 255, 255, 0.5);
+                    transform: translateY(-2px);
+                }
+
+                .profile-container .nav-tabs .nav-link.active {
+                    color: #fff;
+                    background: linear-gradient(135deg, #9d7241 0%, #e37517 100%);
+                    box-shadow: 0 4px 15px rgb(243 218 141);
+                    transform: translateY(-2px);
+                }
+
+
+                    .profile-container .nav-tabs .nav-link.active::before {
+                        content: '';
+                        position: absolute;
+                        top: 2px;
+                        left: 10px;
+                        right: -2px;
+                        bottom: -2px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 10px;
+                        z-index: -1;
+                        opacity: 0.3;
+                    }
+
+                /* Tab content styling */
+
+                .profile-container .nav-tabs .nav-link::before {
+                    content: '';
+                    width: 20px;
+                    height: 20px;
+                    margin-right: 8px;
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: center;
+                    display: inline-block;
+                }
+
+        .profile-container #profile-tab::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>');
+        }
+
+        .profile-container #orders-tab::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5zM3.14 5l1.25 5h8.22l1.25-5H3.14zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0zm9-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"/></svg>');
+        }
+
+        .profile-container #reviews-tab::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/></svg>');
+        }
+
+        .profile-container #addresses-tab::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>');
+        }
+
+        .profile-container .tab-content {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+
+        .profile-container .tab-pane h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+            .profile-container .tab-pane h3::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 60px;
+                height: 3px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 2px;
+            }
+
+        /* Responsive design */
+
+        @@media (max-width: 768px) {
+            .profile-container .nav-tabs {
+                flex-direction: column;
+                padding: 6px;
+            }
+
+                .profile-container .nav-tabs .nav-item {
+                    margin: 2px 0;
+                    flex: none;
+                }
+
+                .profile-container .nav-tabs .nav-link {
+                    padding: 15px 20px;
+                    font-size: 16px;
+                    text-align: left;
+                }
+
+                    .profile-container .nav-tabs .nav-link::before {
+                        margin-right: 12px;
+                    }
+
+            .profile-container .tab-content {
+                padding: 20px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .profile-container .nav-tabs {
+                padding: 4px;
+            }
+
+                .profile-container .nav-tabs .nav-link {
+                    padding: 12px 16px;
+                    font-size: 14px;
+                }
+
+            .profile-container .tab-content {
+                padding: 15px;
+            }
+        }
+
+        /* Animation for tab switching */
+        .profile-container .tab-pane {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+            .profile-container .tab-pane.active {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+        /* Enhanced card styling for profile */
+        .profile-container .profile-card {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+            .profile-container .profile-card .card-body {
+                padding: 0;
+            }
+    </style>
+}

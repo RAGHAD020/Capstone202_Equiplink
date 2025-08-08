@@ -1,0 +1,199 @@
+﻿@model EquipLink.Models.Order
+@{
+    ViewData["Title"] = "Order Details";
+}
+<section class="py-5">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            <partial name="~/Views/Provider/_ProviderSidebar.cshtml" />
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Order Details</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold">Order - ORD-@Model.OrdId</h3>
+                            <div>
+                                <span class="badge bg-@GetStatusBadgeColor(Model.OrdStatus) fs-6">
+                                    @Model.OrdStatus
+                                </span>
+                                <button class="btn btn-sm btn-outline-info ms-2"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#updateStatusModal">
+                                    Update Status
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">Order Information</h6>
+                                <div class="info-section">
+                                    <p><strong>Date:</strong> @(Model.OrdCreatedDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</p>
+                                    <p><strong>Total:</strong> SAR @Model.OrdTotalPrice.ToString("F2")</p>
+                                    <p><strong>Status:</strong> @Model.OrdStatus</p>
+                                    <p><strong>Customer:</strong> @GetCustomerFullName(Model.Customer)</p>
+                                    <p><strong>Customer Email:</strong> @(Model.Customer?.UserEmail ?? "N/A")</p>
+                                    <p><strong>Customer Phone:</strong> @(Model.Customer?.UserPhone ?? "N/A")</p>
+                                    <p><strong>Notes:</strong> @(Model.OrdNotes ?? "None")</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold">Order Items</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Equipment Name</th>
+                                                <th>Quantity</th>
+                                                <th>Unit Price</th>
+                                                <th>Subtotal</th>
+                                                <th>Start Date</th>
+                                                <th>End Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.Orderequipments != null && Model.Orderequipments.Any())
+                                            {
+                                                @foreach (var item in Model.Orderequipments)
+                                                {
+                                                    <tr>
+                                                        <td>@(item.Equ?.EquName ?? "N/A")</td>
+                                                        <td>@item.OrdEqQuantity</td>
+                                                        <td>SAR @item.OrdEqUnitPrice.ToString("F2")</td>
+                                                        <td>SAR @item.OrdEqSubTotal.ToString("F2")</td>
+                                                        <td>@(item.OrdEqStartDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                                                        <td>@(item.OrdEqEndDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No items found.</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="@Url.Action("OrdersIndex", "Provider")" class="btn btn-outline-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Orders
+                            </a>
+                            <div>
+                                <button class="btn btn-outline-success" onclick="window.print()">
+                                    <i class="fas fa-print me-2"></i>Print Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1"
+     aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">
+                    Update Status - ORD-@Model.OrdId
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="@Url.Action("OrderUpdateStatus", "Provider")" method="POST">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" value="@Model.OrdId" />
+                    <div class="mb-3">
+                        <label for="status" class="form-label fw-bold">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Pending" selected="@(Model.OrdStatus == "Pending")">Pending</option>
+                            <option value="Processing" selected="@(Model.OrdStatus == "Processing")">Processing</option>
+                            <option value="Shipped" selected="@(Model.OrdStatus == "Shipped")">Shipped</option>
+                            <option value="Delivered" selected="@(Model.OrdStatus == "Delivered")">Delivered</option>
+                            <option value="Cancelled" selected="@(Model.OrdStatus == "Cancelled")">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusBadgeColor(string status)
+    {
+        return status switch
+        {
+            "Pending" => "warning",
+            "Processing" => "info",
+            "Shipped" => "primary",
+            "Delivered" => "success",
+            "Cancelled" => "danger",
+            _ => "secondary"
+        };
+    }
+
+    private string GetCustomerFullName(EquipLink.Models.User customer)
+    {
+        if (customer == null)
+            return "Unknown";
+
+        return $"{customer.UserFname} {customer.UserLname}".Trim();
+    }
+}
+
+@section Styles {
+    <style>
+        .info-section p {
+            margin-bottom: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+        }
+
+        @@media print {
+            .btn, .modal, .sidebar
+
+        {
+            display: none !important;
+        }
+
+        .col-lg-9 {
+            width: 100% !important;
+        }
+
+        }
+    </style>
+}

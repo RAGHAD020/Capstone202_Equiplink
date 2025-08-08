@@ -1,0 +1,97 @@
+﻿@model EquipLink.ViewModels.OperatorVMs.ProfileUpdateViewModel
+@using System.Security.Claims
+
+@section Styles {
+    <style>
+        .dashboard-container {
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+}
+
+<section class="py-5">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            <partial name="_OperatorSidebar" />
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Profile</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <!-- Profile Form -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">Update Profile</h3>
+                        <form asp-action="ProfileUpdate" method="POST">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="User_FName" class="form-label fw-bold"></label>
+                                    <input asp-for="User_FName" class="form-control" />
+                                    <span asp-validation-for="User_FName" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="User_LName" class="form-label fw-bold"></label>
+                                    <input asp-for="User_LName" class="form-control" />
+                                    <span asp-validation-for="User_LName" class="text-danger"></span>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="User_Email" class="form-label fw-bold"></label>
+                                    <input asp-for="User_Email" class="form-control" />
+                                    <span asp-validation-for="User_Email" class="text-danger"></span>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="User_Phone" class="form-label fw-bold"></label>
+                                    <input asp-for="User_Phone" class="form-control" />
+                                    <span asp-validation-for="User_Phone" class="text-danger"></span>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="User_Password" class="form-label fw-bold"></label>
+                                    <input asp-for="User_Password" class="form-control" />
+                                    <span asp-validation-for="User_Password" class="text-danger"></span>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="User_Password_confirmation" class="form-label fw-bold"></label>
+                                    <input asp-for="User_Password_confirmation" class="form-control" />
+                                    <span asp-validation-for="User_Password_confirmation" class="text-danger"></span>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        @if (Model.Company != null)
+                        {
+                            <h3 class="fw-bold mt-5 mb-4">Company Details</h3>
+                            <div class="card p-3">
+                                <p><strong>Name:</strong> @Model.Company.CoName</p>
+                                <p><strong>Phone:</strong> @Model.Company.CoPhone</p>
+                                <p><strong>Tax Number:</strong> @Model.Company.CoTaxNumber</p>
+                                <a href="#" class="btn btn-outline-primary mt-3">Edit Company Details</a>
+                            </div>
+                        }
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

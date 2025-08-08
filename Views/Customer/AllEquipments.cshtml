@@ -1,0 +1,442 @@
+﻿@model EquipLink.ViewModels.FrontVMs.EquipmentIndexViewModel
+
+@{
+    ViewData["Title"] = "All Equipment";
+}
+
+<section class="py-5">
+    <div class="container">
+        <h1 class="fw-bold mb-5 text-center">All Equipment</h1>
+        <div class="row g-4">
+            <!-- Sidebar Filter -->
+            <div class="col-lg-3">
+                <div class="sidebar filter-section p-4 bg-light rounded-3 shadow-sm">
+                    <h3 class="fw-bold mb-4">Filters</h3>
+                    <form method="GET" asp-action="EquipmentIndex" class="filter-form">
+                        <!-- Category Filter -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold">Category</h5>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="Categories" id="cat@(category.CategId)" value="@category.CategId"
+                                           @(Model.Filters.Categories != null && Model.Filters.Categories.Contains(category.CategId) ? "checked" : "")>
+                                    <label class="form-check-label" for="cat@(category.CategId)">@category.CategType</label>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Sort By Filter (NEW) -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Sort By</h6>
+                            <select class="form-select" name="SortBy">
+                                <option value="">Default</option>
+                                <option value="price_asc" selected="@(Model.Filters.SortBy == "price_asc")">Price: Low to High</option>
+                                <option value="price_desc" selected="@(Model.Filters.SortBy == "price_desc")">Price: High to Low</option>
+                                <option value="latest" selected="@(Model.Filters.SortBy == "latest")">Recently Added</option>
+                                <option value="oldest" selected="@(Model.Filters.SortBy == "oldest")">Old Listings</option>
+                            </select>
+                        </div>
+
+
+                        <!-- Condition Filter -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Condition</h6>
+                            @{
+                                var conditions = new[] { "Good", "Fair", "Poor" }; // Removed "New" condition
+                            }
+                            @foreach (var condition in conditions)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="Conditions" id="cond@condition" value="@condition"
+                                           @(Model.Filters.Conditions != null && Model.Filters.Conditions.Contains(condition) ? "checked" : "")>
+                                    <label class="form-check-label" for="cond@condition">@condition</label>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Availability Filter -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold">Availability</h5>
+                            @{
+                                var availabilities = new[] { "rent", "buy" }; // Changed from Available/Rented/Maintenance/Unavailable
+                            }
+                            @foreach (var availability in availabilities)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="Availabilities" id="avail@availability" value="@availability"
+                                           @(Model.Filters.Availabilities != null && Model.Filters.Availabilities.Contains(availability) ? "checked" : "")>
+                                    <label class="form-check-label" for="avail@availability">@(availability == "rent" ? "Rent" : "Buy")</label>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Price Range Filter -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Price Range (Daily Rate)</h6>
+                            <div class="input-group mb-2">
+                                <input type="number" class="form-control" name="MinPrice" placeholder="Min" aria-label="Min Price" min="0"
+                                       value="@Model.Filters.MinPrice">
+                                <span class="input-group-text">-</span>
+                                <input type="number" class="form-control" name="MaxPrice" placeholder="Max" aria-label="Max Price" min="0"
+                                       value="@Model.Filters.MaxPrice">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Apply Filter</button>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary w-100 clear-filters">Clear Filters</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Equipment List -->
+            <div class="col-lg-9">
+                <div class="row g-4" id="equipment-list">
+                    @foreach (var item in Model.Equipment)
+                    {
+                        <div class="col-md-4">
+                            <div class="equipment-card card h-100 border-0 shadow-lg rounded-3 overflow-hidden">
+                                <div class="position-relative">
+                                    <img src="@item.EquImage" class="card-img-top img-fluid" alt="@item.EquName" style="height: 200px; object-fit: cover;">
+                                    <div class="@(item.EquType == "rent" ? "bagde4" : "bagde3") position-absolute top-0 start-0 bg-success text-white p-2">
+                                        <small>@item.EquType</small>
+                                    </div>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between p-4 bg-light">
+                                    <div>
+                                        <h6 class="text-dark mb-2">
+                                            <a asp-action="EquipmentShow" asp-route-id="@item.EquId" class="text-decoration-none text-dark">@item.EquName</a>
+                                        </h6>
+                                        <p class="text-muted mb-2">Category: @(item.Categ?.CategType?.Replace("Industrial Equipment", "") ?? "Uncategorized")</p>
+                                        @*                                         <p class="text-muted mb-2">Provider: @(item.Provider?.UserFname ?? "Unknown") @(item.Provider?.UserLname ?? "")</p>
+ *@                                    </div>
+                                    <div>
+                                        <p class="fw-bold text-primary mb-2">SAR @item.EquPrice.ToString("F2")</p>
+                                        <div class="d-flex mb-3">
+                                            <a style="margin-right: 10px;" asp-action="EquipmentShow" asp-route-id="@item.EquId" class="btn btn-outline-primary w-75 mr-3 py-2">View Details</a>
+
+                                            @if (item.EquType == "rent")
+                                            {
+                                                <a asp-action="EquipmentShow" asp-route-id="@item.EquId" class="btn btn-primary w-25 py-2 text-center">
+                                                    <i class="bi bi-calendar3"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                @if (User.Identity.IsAuthenticated)
+                                                {
+                                                    <!-- Authenticated user - show the add to cart form -->
+                                                    <form id="addToCartForm-@item.EquId" class="add-to-cart-form w-100" data-equipment-id="@item.EquId">
+                                                        @Html.AntiForgeryToken()
+                                                        <div class="d-flex align-items-center">
+                                                            <input type="number" name="quantity" value="1" min="1" class="form-control w-75 form-control-sm me-2 quantity-input" style="width: 60px;">
+                                                            <button type="submit" class="btn btn-primary w-100 py-2 add-to-cart-btn">
+                                                                <i class="bi bi-cart-plus-fill"></i>
+                                                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                    @* <form asp-controller="Cart" asp-action="AddToCart" method="POST" class="w-25">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="equipmentId" value="@item.EquId">
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <button type="submit" class="btn btn-primary w-100 py-2">
+                                                        <i class="bi bi-cart-plus-fill"></i>
+                                                    </button>
+                                                </form> *@
+                                                }
+                                                else
+                                                {
+                                                    <!-- Not authenticated - show add to cart button that triggers sweet alert -->
+                                                    @* <div class="d-flex align-items-center w-100">
+                                                    <input type="number" value="1" min="1" class="form-control w-75 form-control-sm me-2" style="width: 60px;" disabled>
+                                                    <button type="button" class="btn btn-primary w-25 py-2 login-required-btn"
+                                                            data-login-url="@Url.Action("Login", "Auth", new { returnUrl = Context.Request.Path + Context.Request.QueryString })">
+                                                        <i class="bi bi-cart-plus-fill"></i>
+                                                    </button>
+                                                </div> *@
+                                                    <button type="button" class="btn btn-primary w-25 py-2 login-required-btn"
+                                                            data-login-url="@Url.Action("Login", "Auth", new { returnUrl = Context.Request.Path + Context.Request.QueryString })">
+                                                        <i class="bi bi-cart-plus-fill"></i>
+                                                    </button>
+                                                }
+                                            }
+                                        </div>
+                                        @*                                         <a asp-action="EquipmentShow" asp-route-id="@item.EquId" class="btn btn-outline-primary w-100 mr-2 py-2">View Details</a> *@                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="EquipmentIndex"
+                                   asp-route-Categories="@string.Join(",", Model.Filters.Categories ?? new List<int>())"
+                                   asp-route-Conditions="@string.Join(",", Model.Filters.Conditions ?? new List<string>())"
+                                   asp-route-Availabilities="@string.Join(",", Model.Filters.Availabilities ?? new List<string>())"
+                                   asp-route-MinPrice="@Model.Filters.MinPrice"
+                                   asp-route-MaxPrice="@Model.Filters.MaxPrice"
+                                   asp-route-SortBy="@Model.Filters.SortBy"
+                                   asp-route-Page="@(Model.CurrentPage - 1)">Previous</a>
+                            </li>
+                        }
+
+                        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-action="EquipmentIndex"
+                                   asp-route-Categories="@string.Join(",", Model.Filters.Categories ?? new List<int>())"
+                                   asp-route-Conditions="@string.Join(",", Model.Filters.Conditions ?? new List<string>())"
+                                   asp-route-Availabilities="@string.Join(",", Model.Filters.Availabilities ?? new List<string>())"
+                                   asp-route-MinPrice="@Model.Filters.MinPrice"
+                                   asp-route-MaxPrice="@Model.Filters.MaxPrice"
+                                   asp-route-SortBy="@Model.Filters.SortBy"
+                                   asp-route-Page="@i">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" asp-action="EquipmentIndex"
+                                   asp-route-Categories="@string.Join(",", Model.Filters.Categories ?? new List<int>())"
+                                   asp-route-Conditions="@string.Join(",", Model.Filters.Conditions ?? new List<string>())"
+                                   asp-route-Availabilities="@string.Join(",", Model.Filters.Availabilities ?? new List<string>())"
+                                   asp-route-MinPrice="@Model.Filters.MinPrice"
+                                   asp-route-MaxPrice="@Model.Filters.MaxPrice"
+                                   asp-route-SortBy="@Model.Filters.SortBy"
+                                   asp-route-Page="@(Model.CurrentPage + 1)">Next</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Toast notification HTML (add this to your layout or main page) -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    <div id="cartToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-cart-check-fill text-success me-2"></i>
+            <strong class="me-auto">Cart Updated</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <!-- Message will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        .add-to-cart-btn {
+            transition: all 0.3s ease;
+        }
+
+            .add-to-cart-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+
+            .add-to-cart-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+        .login-required-btn {
+            transition: all 0.3s ease;
+        }
+
+            .login-required-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+
+        /* Custom cart count animation */
+        .cart-count {
+            transition: all 0.3s ease;
+        }
+
+            .cart-count.updated {
+                animation: bounce 0.6s;
+            }
+
+        @@keyframes bounce {
+            0%, 20%, 60%, 100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            80% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Custom SweetAlert2 styles */
+        .swal2-popup {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .swal2-title {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .swal2-html-container {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .swal2-confirm {
+            background-color: #007bff !important;
+            border-color: #007bff !important;
+            margin-left: 8px;
+        }
+
+        .swal2-cancel {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            margin-left: 8px
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.querySelector('.clear-filters').addEventListener('click', function () {
+            window.location.href = '@Url.Action("EquipmentIndex", "Front")';
+        });
+
+        $(document).ready(function() {
+            // Configure Toastr
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "3000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Handle login required button click
+            $('.login-required-btn').on('click', function() {
+                const loginUrl = $(this).data('login-url');
+
+                Swal.fire({
+                    title: 'Login Required',
+                    html: '<i class="bi bi-person-lock" style="font-size: 3rem; color: #007bff;"></i><br><br>You must login to be able to add items to your cart.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    cancelButtonText: '<i class="bi bi-x-circle me-2"></i>Cancel',
+                    confirmButtonText: '<i class="bi bi-box-arrow-in-right me-2"></i>Login Now',
+                    reverseButtons: true,
+                    customClass: {
+                        cancelButton: 'btn btn-secondary',
+                        confirmButton: 'btn btn-primary me-2',
+
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = loginUrl;
+                    }
+                });
+            });
+
+            // Handle form submission with Toastr
+            $('.add-to-cart-form').on('submit', function(e) {
+                e.preventDefault();
+
+                const form = $(this);
+                const equipmentId = form.data('equipment-id');
+                const quantity = form.find('.quantity-input').val();
+                const submitBtn = form.find('.add-to-cart-btn');
+                const spinner = submitBtn.find('.spinner-border');
+                const icon = submitBtn.find('.bi-cart-plus-fill');
+
+                // Show loading state
+                submitBtn.prop('disabled', true);
+                spinner.removeClass('d-none');
+                icon.addClass('d-none');
+
+                // Get anti-forgery token
+                const token = form.find('input[name="__RequestVerificationToken"]').val();
+
+                $.ajax({
+                    url: '@Url.Action("AddToCartAjax", "Cart")',
+                    type: 'POST',
+                    data: {
+                        equipmentId: equipmentId,
+                        quantity: quantity,
+                        __RequestVerificationToken: token
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Show success notification with Toastr
+                            toastr.success(response.message, 'Success!', {
+                                iconClass: 'toast-success',
+                                onShown: function() {
+                                    // Update cart count
+                                    updateCartCount(response.cartCount);
+                                }
+                            });
+
+                            // Reset form
+                            form.find('.quantity-input').val(1);
+                        } else {
+                            toastr.error(response.message, 'Error!');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        toastr.error('An error occurred while adding item to cart', 'Error!');
+                        console.error('AJAX Error:', error);
+                    },
+                    complete: function() {
+                        // Reset button state
+                        submitBtn.prop('disabled', false);
+                        spinner.addClass('d-none');
+                        icon.removeClass('d-none');
+                    }
+                });
+            });
+
+            function updateCartCount(count) {
+                // Update cart count in navigation
+                const cartCountElement = $('.cart-count, #cart-count, .badge');
+                if (cartCountElement.length) {
+                    cartCountElement.text(count);
+
+                    // Add bounce animation
+                    cartCountElement.addClass('animate__animated animate__bounce');
+                    setTimeout(() => {
+                        cartCountElement.removeClass('animate__animated animate__bounce');
+                    }, 1000);
+                }
+            }
+        });
+    </script>
+}

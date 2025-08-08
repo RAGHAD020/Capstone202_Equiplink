@@ -1,0 +1,137 @@
+﻿@model IEnumerable<EquipLink.Models.User>
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<section class="py-5 bg-light">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            @await Html.PartialAsync("~/Views/Admin/_AdminSidebar.cshtml")
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Manage Users</h1>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">User List</h3>
+
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="userSearch" placeholder="Search by name, email, or type..." aria-label="Search users">
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>User ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Last Login</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                    @if (Model != null && Model.Any())
+                                    {
+                                        @foreach (var user in Model)
+                                        {
+                                            <tr>
+                                                <td>USER-@user.UserId</td>
+                                                <td>@($"{user.UserFname} {user.UserLname}")</td>
+                                                <td>@user.UserEmail</td>
+                                                <td class="@(user.UserLastLoginDate == null ? "text-danger" : "")">
+                                                    @(user.UserLastLoginDate?.ToString("yyyy-MM-dd hh:mm tt") ?? "Never")
+                                                </td>
+                                                <td>@user.UserType</td>
+                                                <td>
+                                                    <span class="badge @(user.UserIsActive == 1 ? "bg-success" : "bg-secondary")">
+                                                        @(user.UserIsActive == 1 ? "Active" : "Inactive")
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <form asp-action="ToggleUserActivation" asp-route-userId="@user.UserId" method="post" style="display:inline;">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit"
+                                                                class="btn btn-sm @(user.UserIsActive == 1 ? "btn-danger" : "btn-success")"
+                                                                onclick="return confirm('Are you sure you want to @(user.UserIsActive == 1 ? "deactivate" : "activate") this user?');">
+                                                            <i class="fas @(user.UserIsActive == 1 ? "fa-ban" : "fa-check")"></i>
+                                                            @(user.UserIsActive == 1 ? "Deactivate" : "Activate")
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">No users found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.getElementById('userSearch').addEventListener('input', function() {
+            let input = this.value.toLowerCase();
+            let tableRows = document.querySelectorAll('#userTableBody tr');
+            let dataRows = Array.from(tableRows).filter(row => row.cells.length >= 7); // Updated to 7 columns
+            let emptyRow = Array.from(tableRows).find(row => row.cells.length < 7);
+
+            if (dataRows.length === 0) return; // No data to search
+
+            let visibleCount = 0;
+
+            dataRows.forEach(row => {
+                let name = row.cells[1].textContent.toLowerCase();
+                let email = row.cells[2].textContent.toLowerCase();
+                let type = row.cells[4].textContent.toLowerCase(); // Updated index to match new column position
+
+                if (name.includes(input) || email.includes(input) || type.includes(input)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Handle "No users found" message
+            if (emptyRow) {
+                if (visibleCount === 0 && input.trim() !== '') {
+                    emptyRow.style.display = '';
+                    emptyRow.cells[0].textContent = 'No users match your search criteria.';
+                } else {
+                    emptyRow.style.display = 'none';
+                }
+            }
+
+            // If search is cleared, show original empty message if no data
+            if (input.trim() === '' && emptyRow && dataRows.length === 0) {
+                emptyRow.cells[0].textContent = 'No users found.';
+                emptyRow.style.display = '';
+            }
+        });
+    </script>
+}

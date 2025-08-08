@@ -1,0 +1,55 @@
+﻿@model EquipLink.ViewModels.EquipmentVMs.EquipmentCreateViewModel
+@{
+    ViewData["Title"] = "Add Equipment";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="py-5">
+    <div class="container-fluid dashboard-container">
+        <div class="row">
+            <!-- Sidebar -->
+            <partial name="~/Views/Provider/_ProviderSidebar.cshtml" />
+
+            <!-- Main Content -->
+            <div class="col-lg-9 col-md-8">
+                <h1 class="fw-bold mb-4">Add Equipment</h1>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <div class="card dashboard-card mb-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold mb-4">Add New Equipment</h3>
+                       @*  <partial name="~/Views/Provider/Equipment/_EquipmentForm.cshtml"
+                                 model="Model"
+                                 view-data='new ViewDataDictionary(ViewData) {
+                                     { "Action", Url.Action("Store", "Equipment") },
+                                     { "Method", "POST" },
+                                     { "Equipment", null },
+                                 }' /> *@
+                        <partial name="~/Views/Provider/Equipment/_EquipmentCreateForm.cshtml"
+                                 model="Model"
+                                 view-data='new ViewDataDictionary(ViewData) {
+                                     { "Action", Url.Action("Store", "Equipment") },
+                                     { "Method", "POST" },
+                                     { "Equipment", null },
+                                 }' />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
